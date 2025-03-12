@@ -9,7 +9,7 @@ target:
 repos:
   zenoh:
     layers:
-      ../meta-zenoh:
+      meta-zenoh:
 
   poky:
     url: https://git.yoctoproject.org/git/poky

@@ -1,4 +1,5 @@
 SUMMARY = "The zenoh router"
+HOMEPAGE = "http://zenoh.io"
 LICENSE = "EPL-2.0 | Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=530d837aca648e45704db71dedff39c4"
 
@@ -20,7 +21,7 @@ SYSTEMD_SERVICE:${PN} = "zenohd.service"
 
 ZENOH_SHMEM ?= "0"
 
-CARGO_BUILD_FLAGS += "${@ "--features='unstable shared-memory'" if bb.utils.to_boolean(d.getVar('ZENOH_SHMEM')) else ""}"
+CARGO_BUILD_FLAGS += "${@ ["--features='unstable shared-memory'", ""][bb.utils.to_boolean(d.getVar('ZENOH_SHMEM'))]}"
 
 do_install:append() {
     install -d -m 755 ${D}${systemd_system_unitdir}
