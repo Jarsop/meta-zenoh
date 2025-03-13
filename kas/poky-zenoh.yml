@@ -58,8 +58,7 @@ local_conf_header:
         HALT,/tmp,10M,1K"
   rust: |
     RUST_PANIC_STRATEGY = "abort"
-    RM_WORK_EXCLUDE += "zenoh zenoh-c"
-    ZENOH_SHMEM = "true"
+    # RM_WORK_EXCLUDE += "zenoh zenoh-c"
   image: |
     INIT_MANAGER = "systemd"
     CORE_IMAGE_EXTRA_INSTALL = "zenoh"

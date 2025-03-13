@@ -1,0 +1,6 @@
+header:
+  version: 18
+
+local_conf_header:
+  zenoh_unstable_api: |
+    ZENOH_UNSTABLE_API = "true"

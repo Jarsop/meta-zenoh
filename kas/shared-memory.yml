@@ -1,0 +1,6 @@
+header:
+  version: 18
+
+local_conf_header:
+  zenoh_shared_memory: |
+    ZENOH_SHARED_MEMORY = "true"
