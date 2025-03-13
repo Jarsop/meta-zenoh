@@ -1,7 +1,7 @@
-diff --git a/Cargo.lock b/Cargo.lock
-index e6ba6614..0c2fa228 100644
---- a/Cargo.lock
-+++ b/Cargo.lock
+Index: git/Cargo.lock
+===================================================================
+--- git.orig/Cargo.lock
++++ git/Cargo.lock
 @@ -3732,7 +3732,8 @@ dependencies = [
  [[package]]
  name = "zenoh"
@@ -299,10 +299,10 @@ index e6ba6614..0c2fa228 100644
  dependencies = [
   "async-trait",
   "const_format",
-diff --git a/Cargo.toml b/Cargo.toml
-index eea5a51f..dc6c880f 100644
---- a/Cargo.toml
-+++ b/Cargo.toml
+Index: git/Cargo.toml
+===================================================================
+--- git.orig/Cargo.toml
++++ git/Cargo.toml
 @@ -74,10 +74,10 @@ spin = "0.9.5"
  tokio = "*"
  unwrap-infallible = "0.1.5"
@@ -318,10 +318,10 @@ index eea5a51f..dc6c880f 100644
  flume = "*"
  
  [build-dependencies]
-diff --git a/Cargo.toml.in b/Cargo.toml.in
-index 8fa9047c..bf187cd4 100644
---- a/Cargo.toml.in
-+++ b/Cargo.toml.in
+Index: git/Cargo.toml.in
+===================================================================
+--- git.orig/Cargo.toml.in
++++ git/Cargo.toml.in
 @@ -74,11 +74,10 @@ spin = "0.9.5"
  tokio = "*"
  unwrap-infallible = "0.1.5"
@@ -338,10 +338,10 @@ index 8fa9047c..bf187cd4 100644
  
  [build-dependencies]
  cbindgen = "0.26.0"
-diff --git a/build-resources/opaque-types/Cargo.lock b/build-resources/opaque-types/Cargo.lock
-index 47d828d1..8f5c086b 100644
---- a/build-resources/opaque-types/Cargo.lock
-+++ b/build-resources/opaque-types/Cargo.lock
+Index: git/build-resources/opaque-types/Cargo.lock
+===================================================================
+--- git.orig/build-resources/opaque-types/Cargo.lock
++++ git/build-resources/opaque-types/Cargo.lock
 @@ -3125,7 +3125,8 @@ dependencies = [
  [[package]]
  name = "zenoh"
@@ -419,7 +419,7 @@ index 47d828d1..8f5c086b 100644
  dependencies = [
   "async-trait",
   "bincode",
-@@ -3263,10 +3271,11 @@ dependencies = [
+@@ -3263,7 +3271,8 @@ dependencies = [
  [[package]]
  name = "zenoh-keyexpr"
  version = "1.2.1"
@@ -428,11 +428,7 @@ index 47d828d1..8f5c086b 100644
 +checksum = "b91a0bd4ec27d130c923eb204270f711b2e911a4a4fbb9cbdeb97ee018d793ef"
  dependencies = [
   "getrandom",
-- "hashbrown",
-+ "hashbrown 0.14.5",
-  "keyed-set",
-  "rand",
-  "schemars",
+  "hashbrown",
 @@ -3278,7 +3287,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link"
@@ -473,7 +469,7 @@ index 47d828d1..8f5c086b 100644
  dependencies = [
   "async-trait",
   "tokio",
-@@ -3367,10 +3380,11 @@ dependencies = [
+@@ -3367,7 +3380,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-tcp"
  version = "1.2.1"
@@ -482,11 +478,7 @@ index 47d828d1..8f5c086b 100644
 +checksum = "43c7691c934f17d8d709f0e669dd1802da339509303b92f2448af0f95a482e3d"
  dependencies = [
   "async-trait",
-- "socket2",
-+ "socket2 0.5.7",
-  "tokio",
-  "tokio-util",
-  "tracing",
+  "socket2",
 @@ -3384,7 +3398,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-tls"
@@ -497,16 +489,7 @@ index 47d828d1..8f5c086b 100644
  dependencies = [
   "async-trait",
   "base64 0.22.1",
-@@ -3393,7 +3408,7 @@ dependencies = [
-  "rustls-pki-types",
-  "rustls-webpki",
-  "secrecy",
-- "socket2",
-+ "socket2 0.5.7",
-  "time",
-  "tls-listener",
-  "tokio",
-@@ -3413,10 +3428,11 @@ dependencies = [
+@@ -3413,7 +3428,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-udp"
  version = "1.2.1"
@@ -515,11 +498,7 @@ index 47d828d1..8f5c086b 100644
 +checksum = "58826b0f1c878f72e86af9c0cc9f1f9379e9d4cdc8d21dee7063c2552c83388c"
  dependencies = [
   "async-trait",
-- "socket2",
-+ "socket2 0.5.7",
-  "tokio",
-  "tokio-util",
-  "tracing",
+  "socket2",
 @@ -3432,7 +3448,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-unixpipe"
@@ -620,7 +599,7 @@ index 47d828d1..8f5c086b 100644
  dependencies = [
   "advisory-lock",
   "async-trait",
-@@ -3596,9 +3622,10 @@ dependencies = [
+@@ -3596,7 +3622,8 @@ dependencies = [
  [[package]]
  name = "zenoh-sync"
  version = "1.2.1"
@@ -628,11 +607,8 @@ index 47d828d1..8f5c086b 100644
 +source = "registry+https://github.com/rust-lang/crates.io-index"
 +checksum = "d902c41b93b9ec4e81e9894aa88209d4b45ac3a936802a1132992148253e6dc5"
  dependencies = [
-- "event-listener",
-+ "event-listener 5.3.1",
+  "event-listener",
   "futures",
-  "tokio",
-  "zenoh-buffers",
 @@ -3609,7 +3636,8 @@ dependencies = [
  [[package]]
  name = "zenoh-task"
@@ -663,10 +639,10 @@ index 47d828d1..8f5c086b 100644
  dependencies = [
   "async-trait",
   "const_format",
-diff --git a/build-resources/opaque-types/Cargo.toml b/build-resources/opaque-types/Cargo.toml
-index 1db48bc2..cbfadd12 100644
---- a/build-resources/opaque-types/Cargo.toml
-+++ b/build-resources/opaque-types/Cargo.toml
+Index: git/build-resources/opaque-types/Cargo.toml
+===================================================================
+--- git.orig/build-resources/opaque-types/Cargo.toml
++++ git/build-resources/opaque-types/Cargo.toml
 @@ -6,10 +6,7 @@ edition = "2021"
  # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
  
@@ -692,11 +668,11 @@ index 1db48bc2..cbfadd12 100644
  const_format = "0.2.32"
  flume = "*"
  tokio = "*"
-diff --git a/build.rs b/build.rs
-index 526deb61..78fbc916 100644
---- a/build.rs
-+++ b/build.rs
-@@ -138,6 +138,7 @@ fn produce_opaque_types_data() -> PathBuf {
+Index: git/build.rs
+===================================================================
+--- git.orig/build.rs
++++ git/build.rs
+@@ -138,6 +138,7 @@ fn produce_opaque_types_data() -> PathBu
          .arg(target)
          .arg("--manifest-path")
          .arg(manifest_path)
