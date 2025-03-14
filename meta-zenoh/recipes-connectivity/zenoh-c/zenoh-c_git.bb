@@ -57,6 +57,6 @@ do_install() {
     # and consider .so as a symlink to the versioned library for the dev package.
     mv ${D}${libdir}/libzenohc.so ${D}${libdir}/libzenohc.so.1.2.1
     cd ${D}${libdir}
-    ln -s libzenohc.1.2.1 libzenohc.so.1
-    ln -s libzenohc.1 libzenohc.so
+    ln -s libzenohc.so.1.2.1 libzenohc.so.1
+    ln -s libzenohc.so.1 libzenohc.so
 }

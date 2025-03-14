@@ -68,6 +68,6 @@ do_install:append() {
     # and consider .so as a symlink to the versioned library for the dev package.
     mv ${D}${libdir}/libzenohpico.so ${D}${libdir}/libzenohpico.so.1.2.1
     cd ${D}${libdir}
-    ln -s libzenohpico.1.2.1 libzenohpico.so.1
-    ln -s libzenohpico.1 libzenohpico.so
+    ln -s libzenohpico.so.1.2.1 libzenohpico.so.1
+    ln -s libzenohpico.so.1 libzenohpico.so
 }
