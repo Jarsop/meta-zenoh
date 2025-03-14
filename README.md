@@ -5,6 +5,8 @@ Provided recipes:
 
 - [Zenoh router](https://github.com/eclipse-zenoh/zenoh.git)
 - [Zenoh C](https://github.com/eclipse-zenoh/zenoh-c.git)
+- [Zenoh Pico](https://github.com/eclipse-zenoh/zenoh-pico.git)
+- [Zenoh CPP](https://github.com/eclipse-zenoh/zenoh-cpp.git)
 
 Currently, the layer is tested with `scarthgap` branch of the Yocto Project.
 
@@ -31,11 +33,16 @@ ZENOH_UNSTABLE_API = "true" # or "1"
 ```
 
 `kas` files are provided to build the image with the features enabled.
-To build the image with the shared memory transport enabled and unstable-api, run the following command:
+To build the image with the shared memory and unstable-api enabled, run the following command:
 
 ```bash
 kas build poky-zenoh.yml:shared-memory.yml:unstable-api.yml
 ```
+
+> [!NOTE]
+>
+> `ZENOH_SHARED_MEMORY` affect `zenoh` and `zenoh-c` recipes<br/>
+> `ZENOH_UNSTABLE_API` affect `zenoh`, `zenoh-c` and `zenoh-pico` recipes
 
 ## License
 
