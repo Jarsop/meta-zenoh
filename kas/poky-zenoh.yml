@@ -57,7 +57,7 @@ local_conf_header:
         HALT,${SSTATE_DIR},100M,1K \
         HALT,/tmp,10M,1K"
   rust: |
-    RUST_PANIC_STRATEGY = "abort"
+    # RUST_PANIC_STRATEGY = "abort"
     # RM_WORK_EXCLUDE += "zenoh zenoh-c"
   image: |
     INIT_MANAGER = "systemd"

@@ -22,7 +22,9 @@ SYSTEMD_SERVICE:${PN} = "zenohd.service"
 ZENOH_SHARED_MEMORY_FEATURE = "${@ ["", "--features=shared-memory"][bb.utils.to_boolean(d.getVar("ZENOH_SHARED_MEMORY"))]}"
 ZENOH_UNSTABLE_API_FEATURE = "${@ ["", "--features=unstable"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]}"
 
-CARGO_BUILD_FLAGS += "${ZENOH_SHARED_MEMORY_FEATURE} ${ZENOH_UNSTABLE_API_FEATURE}"
+CARGO_BUILD_FLAGS:append = " ${ZENOH_SHARED_MEMORY_FEATURE} ${ZENOH_UNSTABLE_API_FEATURE}"
+
+RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
 
 do_install:append() {
     install -d -m 755 ${D}${systemd_system_unitdir}

@@ -33,6 +33,8 @@ EXTRA_OECMAKE = "\
     ${ZENOHC_BUILD_WITH_UNSTABLE_API} \
 "
 
+RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
+
 # This is tricky, we need to call both cargo and cmake `do_configure` in order
 # to configure properly the project.
 do_configure() {
