@@ -14,7 +14,7 @@ repos:
   poky:
     url: https://git.yoctoproject.org/git/poky
     path: layers/poky
-    branch: scarthgap
+    branch: kirkstone
     layers:
       meta:
       meta-poky:
@@ -23,12 +23,21 @@ repos:
   meta-openembedded:
     url: http://git.openembedded.org/meta-openembedded
     path: layers/meta-openembedded
-    branch: scarthgap
+    branch: kirkstone
     layers:
       meta-oe:
       meta-python:
       meta-networking:
       meta-perl:
+
+  meta-rust:
+    url: https://github.com/meta-rust/meta-rust.git
+    path: layers/meta-rust
+    branch: master
+    patches:
+      data-layout:
+        repo: zenoh
+        path: kas/patches/0001-Revert-rust-common-Update-data-layout-for-x86_64-unk.patch 
 
 bblayers_conf_header:
   standard: |
@@ -57,7 +66,9 @@ local_conf_header:
         HALT,${SSTATE_DIR},100M,1K \
         HALT,/tmp,10M,1K"
   rust: |
-    RUST_PANIC_STRATEGY = "abort"
+    include conf/distro/include/rust_versions.inc
+    RUST_VERSION = "1.75.0"
+    # RUST_PANIC_STRATEGY = "abort"
     # RM_WORK_EXCLUDE += "zenoh zenoh-c"
   image: |
     INIT_MANAGER = "systemd"

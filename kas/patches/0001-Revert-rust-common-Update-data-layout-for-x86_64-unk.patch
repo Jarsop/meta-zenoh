@@ -1,0 +1,27 @@
+From 0d20823ca07f14c4eaf2f7a8b4d1795fe115430a Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Sat, 15 Mar 2025 00:22:01 +0100
+Subject: [PATCH] Revert "rust-common: Update data layout for
+ x86_64-unknown-linux"
+
+This reverts commit b93853cb12e5e9cacb76c439d36eb6b96415026d.
+---
+ recipes-devtools/rust/rust-common.inc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/recipes-devtools/rust/rust-common.inc b/recipes-devtools/rust/rust-common.inc
+index 8bfaf28..2399552 100644
+--- a/recipes-devtools/rust/rust-common.inc
++++ b/recipes-devtools/rust/rust-common.inc
+@@ -148,7 +148,7 @@ TARGET_C_INT_WIDTH[aarch64] = "32"
+ MAX_ATOMIC_WIDTH[aarch64] = "128"
+ 
+ ## x86_64-unknown-linux-{gnu, musl}
+-DATA_LAYOUT[x86_64] = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
++DATA_LAYOUT[x86_64] = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+ LLVM_TARGET[x86_64] = "${RUST_TARGET_SYS}"
+ TARGET_ENDIAN[x86_64] = "little"
+ TARGET_POINTER_WIDTH[x86_64] = "64"
+-- 
+2.48.1
+

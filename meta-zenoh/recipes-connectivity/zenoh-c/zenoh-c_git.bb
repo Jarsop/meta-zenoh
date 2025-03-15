@@ -21,7 +21,7 @@ S = "${WORKDIR}/git"
 B = "${S}"
 
 ZENOHC_CARGO_FLAGS = "-DZENOHC_CARGO_FLAGS='-v;--offline'"
-ZENOHC_CUSTOM_TARGET = "-DZENOHC_CUSTOM_TARGET=${RUST_HOST_SYS}"
+ZENOHC_CUSTOM_TARGET = "-DZENOHC_CUSTOM_TARGET=${HOST_SYS}"
 ZENOHC_BUILD_WITH_SHARED_MEMORY = "${@ ["", "-DZENOHC_BUILD_WITH_SHARED_MEMORY=true"][bb.utils.to_boolean(d.getVar("ZENOH_SHARED_MEMORY"))]}"
 ZENOHC_BUILD_WITH_UNSTABLE_API = "${@ ["", "-DZENOHC_BUILD_WITH_UNSTABLE_API=true"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]}"
 
@@ -33,13 +33,14 @@ EXTRA_OECMAKE = "\
     ${ZENOHC_BUILD_WITH_UNSTABLE_API} \
 "
 
+RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
+
 # This is tricky, we need to call both cargo and cmake `do_configure` in order
 # to configure properly the project.
 do_configure() {
     cargo_common_do_configure
     cmake_do_configure
 }
-do_configure[postfuncs] += "cargo_common_do_patch_paths"
 
 # This is tricky too, we want to use the CMake build system as it is the way
 # to build properly provided by the project.
