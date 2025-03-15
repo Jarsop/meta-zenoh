@@ -12,8 +12,8 @@ SRCREV = "3f11bc5900efd39b816c9762be44f8193c250f47"
 
 S = "${WORKDIR}/git"
 
-ZENOHCXX_ZENOHC ?= "1"
-ZENOHCXX_ZENOHPICO ?= "0"
+ZENOHCXX_ZENOHC ??= "1"
+ZENOHCXX_ZENOHPICO ??= "0"
 
 ZENOH_CXX_DEPENDS = "${@ ["", "zenoh-c"][bb.utils.to_boolean(d.getVar("ZENOHCXX_ZENOHC"))]} \
                      ${@ ["", "zenoh-pico"][bb.utils.to_boolean(d.getVar("ZENOHCXX_ZENOHPICO"))]}"

@@ -1,0 +1,7 @@
+header:
+  version: 18
+
+local_conf_header:
+  zenoh_c_backend: |
+    ZENOHCXX_ZENOHC = "1"
+    ZENOHCXX_ZENOHPICO ?= "0"
