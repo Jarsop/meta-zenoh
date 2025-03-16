@@ -1,7 +1,19 @@
-Index: git/Cargo.lock
-===================================================================
---- git.orig/Cargo.lock
-+++ git/Cargo.lock
+From b63979caab1ea5c1c7034662e325a24045240184 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Sun, 16 Mar 2025 15:57:14 +0100
+Subject: [PATCH 2/3] update lockfiles
+
+Upstream-Status: Pending
+
+---
+ Cargo.lock                              | 91 ++++++++++++++++---------
+ build-resources/opaque-types/Cargo.lock | 90 ++++++++++++++++--------
+ 2 files changed, 120 insertions(+), 61 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index e6ba6614..a2c91d2c 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
 @@ -3732,7 +3732,8 @@ dependencies = [
  [[package]]
  name = "zenoh"
@@ -22,7 +34,15 @@ Index: git/Cargo.lock
  dependencies = [
   "zenoh-collections",
  ]
-@@ -3817,7 +3819,8 @@ dependencies = [
+@@ -3794,7 +3796,6 @@ dependencies = [
+  "chrono",
+  "const_format",
+  "evalexpr",
+- "flume",
+  "fs2",
+  "fs_extra",
+  "json5",
+@@ -3817,7 +3818,8 @@ dependencies = [
  [[package]]
  name = "zenoh-codec"
  version = "1.2.1"
@@ -32,7 +52,7 @@ Index: git/Cargo.lock
  dependencies = [
   "tracing",
   "uhlc",
-@@ -3829,12 +3832,14 @@ dependencies = [
+@@ -3829,12 +3831,14 @@ dependencies = [
  [[package]]
  name = "zenoh-collections"
  version = "1.2.1"
@@ -49,7 +69,7 @@ Index: git/Cargo.lock
  dependencies = [
   "json5",
   "num_cpus",
-@@ -3856,7 +3861,8 @@ dependencies = [
+@@ -3856,7 +3860,8 @@ dependencies = [
  [[package]]
  name = "zenoh-core"
  version = "1.2.1"
@@ -59,7 +79,7 @@ Index: git/Cargo.lock
  dependencies = [
   "lazy_static",
   "tokio",
-@@ -3867,7 +3873,8 @@ dependencies = [
+@@ -3867,7 +3872,8 @@ dependencies = [
  [[package]]
  name = "zenoh-crypto"
  version = "1.2.1"
@@ -69,7 +89,7 @@ Index: git/Cargo.lock
  dependencies = [
   "aes",
   "hmac",
-@@ -3880,7 +3887,8 @@ dependencies = [
+@@ -3880,7 +3886,8 @@ dependencies = [
  [[package]]
  name = "zenoh-ext"
  version = "1.2.1"
@@ -79,7 +99,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "bincode",
-@@ -3899,7 +3907,8 @@ dependencies = [
+@@ -3899,7 +3906,8 @@ dependencies = [
  [[package]]
  name = "zenoh-keyexpr"
  version = "1.2.1"
@@ -89,7 +109,7 @@ Index: git/Cargo.lock
  dependencies = [
   "getrandom",
   "hashbrown 0.14.5",
-@@ -3914,7 +3923,8 @@ dependencies = [
+@@ -3914,7 +3922,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link"
  version = "1.2.1"
@@ -99,7 +119,7 @@ Index: git/Cargo.lock
  dependencies = [
   "zenoh-config",
   "zenoh-link-commons",
-@@ -3934,7 +3944,8 @@ dependencies = [
+@@ -3934,7 +3943,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-commons"
  version = "1.2.1"
@@ -109,7 +129,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "flume",
-@@ -3958,7 +3969,8 @@ dependencies = [
+@@ -3958,7 +3968,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-quic"
  version = "1.2.1"
@@ -119,7 +139,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "base64 0.22.1",
-@@ -3985,7 +3997,8 @@ dependencies = [
+@@ -3985,7 +3996,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-serial"
  version = "1.2.1"
@@ -129,7 +149,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "tokio",
-@@ -4003,7 +4016,8 @@ dependencies = [
+@@ -4003,7 +4015,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-tcp"
  version = "1.2.1"
@@ -139,7 +159,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "socket2 0.5.7",
-@@ -4020,7 +4034,8 @@ dependencies = [
+@@ -4020,7 +4033,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-tls"
  version = "1.2.1"
@@ -149,7 +169,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "base64 0.22.1",
-@@ -4049,7 +4064,8 @@ dependencies = [
+@@ -4049,7 +4063,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-udp"
  version = "1.2.1"
@@ -159,7 +179,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "socket2 0.5.7",
-@@ -4068,7 +4084,8 @@ dependencies = [
+@@ -4068,7 +4083,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-unixpipe"
  version = "1.2.1"
@@ -169,7 +189,7 @@ Index: git/Cargo.lock
  dependencies = [
   "advisory-lock",
   "async-trait",
-@@ -4090,7 +4107,8 @@ dependencies = [
+@@ -4090,7 +4106,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-unixsock_stream"
  version = "1.2.1"
@@ -179,7 +199,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "nix 0.29.0",
-@@ -4108,7 +4126,8 @@ dependencies = [
+@@ -4108,7 +4125,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-vsock"
  version = "1.2.1"
@@ -189,7 +209,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "libc",
-@@ -4126,7 +4145,8 @@ dependencies = [
+@@ -4126,7 +4144,8 @@ dependencies = [
  [[package]]
  name = "zenoh-link-ws"
  version = "1.2.1"
@@ -199,7 +219,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "futures-util",
-@@ -4146,7 +4166,8 @@ dependencies = [
+@@ -4146,7 +4165,8 @@ dependencies = [
  [[package]]
  name = "zenoh-macros"
  version = "1.2.1"
@@ -209,7 +229,7 @@ Index: git/Cargo.lock
  dependencies = [
   "proc-macro2",
   "quote",
-@@ -4157,7 +4178,8 @@ dependencies = [
+@@ -4157,7 +4177,8 @@ dependencies = [
  [[package]]
  name = "zenoh-plugin-trait"
  version = "1.2.1"
@@ -219,7 +239,7 @@ Index: git/Cargo.lock
  dependencies = [
   "git-version",
   "libloading",
-@@ -4173,7 +4195,8 @@ dependencies = [
+@@ -4173,7 +4194,8 @@ dependencies = [
  [[package]]
  name = "zenoh-protocol"
  version = "1.2.1"
@@ -229,7 +249,7 @@ Index: git/Cargo.lock
  dependencies = [
   "const_format",
   "rand",
-@@ -4187,7 +4210,8 @@ dependencies = [
+@@ -4187,7 +4209,8 @@ dependencies = [
  [[package]]
  name = "zenoh-result"
  version = "1.2.1"
@@ -239,7 +259,7 @@ Index: git/Cargo.lock
  dependencies = [
   "anyhow",
  ]
-@@ -4195,7 +4219,8 @@ dependencies = [
+@@ -4195,7 +4218,8 @@ dependencies = [
  [[package]]
  name = "zenoh-runtime"
  version = "1.2.1"
@@ -249,7 +269,7 @@ Index: git/Cargo.lock
  dependencies = [
   "lazy_static",
   "ron",
-@@ -4209,7 +4234,8 @@ dependencies = [
+@@ -4209,7 +4233,8 @@ dependencies = [
  [[package]]
  name = "zenoh-shm"
  version = "1.2.1"
@@ -259,7 +279,7 @@ Index: git/Cargo.lock
  dependencies = [
   "advisory-lock",
   "async-trait",
-@@ -4232,7 +4258,8 @@ dependencies = [
+@@ -4232,7 +4257,8 @@ dependencies = [
  [[package]]
  name = "zenoh-sync"
  version = "1.2.1"
@@ -269,7 +289,7 @@ Index: git/Cargo.lock
  dependencies = [
   "event-listener 5.3.1",
   "futures",
-@@ -4245,7 +4272,8 @@ dependencies = [
+@@ -4245,7 +4271,8 @@ dependencies = [
  [[package]]
  name = "zenoh-task"
  version = "1.2.1"
@@ -279,7 +299,7 @@ Index: git/Cargo.lock
  dependencies = [
   "futures",
   "tokio",
-@@ -4258,7 +4286,8 @@ dependencies = [
+@@ -4258,7 +4285,8 @@ dependencies = [
  [[package]]
  name = "zenoh-transport"
  version = "1.2.1"
@@ -289,7 +309,7 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "crossbeam-utils",
-@@ -4292,7 +4321,8 @@ dependencies = [
+@@ -4292,7 +4320,8 @@ dependencies = [
  [[package]]
  name = "zenoh-util"
  version = "1.2.1"
@@ -299,49 +319,10 @@ Index: git/Cargo.lock
  dependencies = [
   "async-trait",
   "const_format",
-Index: git/Cargo.toml
-===================================================================
---- git.orig/Cargo.toml
-+++ git/Cargo.toml
-@@ -74,10 +74,10 @@ spin = "0.9.5"
- tokio = "*"
- unwrap-infallible = "0.1.5"
- const_format = "0.2.32"
--zenoh = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1", default-features = false, features = ["internal"] }
--zenoh-ext = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", features=["internal"], branch = "release/1.2.1" }
--zenoh-runtime = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1" }
--zenoh-util = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1" }
-+zenoh = { version = "1.2.1", default-features = false, features = ["internal"] }
-+zenoh-ext = { version = "1.2.1", features = ["internal"] }
-+zenoh-runtime = { version = "1.2.1" }
-+zenoh-util = { version = "1.2.1" }
- flume = "*"
- 
- [build-dependencies]
-Index: git/Cargo.toml.in
-===================================================================
---- git.orig/Cargo.toml.in
-+++ git/Cargo.toml.in
-@@ -74,11 +74,10 @@ spin = "0.9.5"
- tokio = "*"
- unwrap-infallible = "0.1.5"
- const_format = "0.2.32"
--zenoh = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1", default-features = false, features = ["internal"] }
--zenoh-ext = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", features=["internal"], branch = "release/1.2.1" }
--zenoh-runtime = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1" }
--zenoh-util = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1" }
--flume = "*"
-+zenoh = { version = "1.2.1", default-features = false, features = ["internal"] }
-+zenoh-ext = { version = "1.2.1", features=["internal"] }
-+zenoh-runtime = { version = "1.2.1" }
-+zenoh-util = { version = "1.2.1" }
- 
- [build-dependencies]
- cbindgen = "0.26.0"
-Index: git/build-resources/opaque-types/Cargo.lock
-===================================================================
---- git.orig/build-resources/opaque-types/Cargo.lock
-+++ git/build-resources/opaque-types/Cargo.lock
+diff --git a/build-resources/opaque-types/Cargo.lock b/build-resources/opaque-types/Cargo.lock
+index 47d828d1..c8f072d4 100644
+--- a/build-resources/opaque-types/Cargo.lock
++++ b/build-resources/opaque-types/Cargo.lock
 @@ -3125,7 +3125,8 @@ dependencies = [
  [[package]]
  name = "zenoh"
@@ -639,44 +620,6 @@ Index: git/build-resources/opaque-types/Cargo.lock
  dependencies = [
   "async-trait",
   "const_format",
-Index: git/build-resources/opaque-types/Cargo.toml
-===================================================================
---- git.orig/build-resources/opaque-types/Cargo.toml
-+++ git/build-resources/opaque-types/Cargo.toml
-@@ -6,10 +6,7 @@ edition = "2021"
- # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
- 
- [features]
--shared-memory = [
--    "zenoh/shared-memory",
--    "zenoh-protocol/shared-memory",
--]
-+shared-memory = ["zenoh/shared-memory", "zenoh-protocol/shared-memory"]
- unstable = ["zenoh/unstable", "zenoh-ext/unstable"]
- auth_pubkey = ["zenoh/auth_pubkey"]
- auth_usrpwd = ["zenoh/auth_usrpwd"]
-@@ -30,9 +27,9 @@ panic = [
- default = ["zenoh/default"]
- 
- [dependencies]
--zenoh = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1", default-features = false, features = ["internal"] }
--zenoh-ext = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", features=["internal"], branch = "release/1.2.1" }
--zenoh-protocol = { version = "1.2.1", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.2.1" }
-+zenoh = { version = "1.2.1", default-features = false, features = ["internal"] }
-+zenoh-ext = { version = "1.2.1", features = ["internal"] }
-+zenoh-protocol = { version = "1.2.1" }
- const_format = "0.2.32"
- flume = "*"
- tokio = "*"
-Index: git/build.rs
-===================================================================
---- git.orig/build.rs
-+++ git/build.rs
-@@ -138,6 +138,7 @@ fn produce_opaque_types_data() -> PathBu
-         .arg(target)
-         .arg("--manifest-path")
-         .arg(manifest_path)
-+        .arg("--offline")
-         .stderr(stdio)
-         .output()
-         .unwrap();
+-- 
+2.48.1
+
