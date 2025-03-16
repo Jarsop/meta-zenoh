@@ -9,7 +9,9 @@ inherit cmake cargo pkgconfig
 
 SRC_URI = " \
     git://github.com/eclipse-zenoh/zenoh-c.git;protocol=https;nobranch=1 \
-    file://fetch-zenoh-from-registry.patch \
+    file://0001-use-crates.io-registry.patch \
+    file://0002-update-lockfiles.patch \
+    file://0003-use-frozen-in-build.rs.patch \
 "
 
 include ${BPN}-crates.inc
@@ -20,18 +22,15 @@ SRCREV = "95af166fc0b8b1682437af908b0a1ef58839afb9"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-ZENOHC_CARGO_FLAGS = "-DZENOHC_CARGO_FLAGS='-v;--offline'"
-ZENOHC_CUSTOM_TARGET = "-DZENOHC_CUSTOM_TARGET=${RUST_HOST_SYS}"
-ZENOHC_BUILD_WITH_SHARED_MEMORY = "${@ ["", "-DZENOHC_BUILD_WITH_SHARED_MEMORY=true"][bb.utils.to_boolean(d.getVar("ZENOH_SHARED_MEMORY"))]}"
-ZENOHC_BUILD_WITH_UNSTABLE_API = "${@ ["", "-DZENOHC_BUILD_WITH_UNSTABLE_API=true"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]}"
+ZENOHC_CARGO_FLAGS = "-v;--frozen"
 
 EXTRA_OECMAKE = "\
-    ${ZENOHC_CARGO_FLAGS} \
-    ${ZENOHC_CUSTOM_TARGET} \
-    ${ZENOHC_BUILD_IN_SOURCE_TREE} \
-    ${ZENOHC_BUILD_WITH_SHARED_MEMORY} \
-    ${ZENOHC_BUILD_WITH_UNSTABLE_API} \
+    -DZENOHC_CARGO_FLAGS='${ZENOHC_CARGO_FLAGS}' \
+    -DZENOHC_CUSTOM_TARGET=${RUST_HOST_SYS} \
+    -DZENOHC_BUILD_WITH_SHARED_MEMORY=${@ ["OFF", "ON"][bb.utils.to_boolean(d.getVar("ZENOH_SHARED_MEMORY"))]} \
+    -DZENOHC_BUILD_WITH_UNSTABLE_API=${@ ["OFF", "ON"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]} \
 "
+EXTRA_OECMAKE[vardeps] += "ZENOH_SHARED_MEMORY ZENOH_UNSTABLE_API"
 
 RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
 
