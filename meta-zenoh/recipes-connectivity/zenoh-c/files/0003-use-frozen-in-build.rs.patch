@@ -1,0 +1,26 @@
+From b718b12af4fe08bd41403e36cd110612d352b044 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Sun, 16 Mar 2025 15:57:41 +0100
+Subject: [PATCH 3/3] use --frozen in build.rs
+
+Upstream-Status: Pending
+
+---
+ build.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build.rs b/build.rs
+index 526deb61..fbb6e460 100644
+--- a/build.rs
++++ b/build.rs
+@@ -138,6 +138,7 @@ fn produce_opaque_types_data() -> PathBuf {
+         .arg(target)
+         .arg("--manifest-path")
+         .arg(manifest_path)
++        .arg("--frozen")
+         .stderr(stdio)
+         .output()
+         .unwrap();
+-- 
+2.48.1
+
