@@ -23,6 +23,7 @@ ZENOH_SHARED_MEMORY_FEATURE = "${@ ["", "--features=shared-memory"][bb.utils.to_
 ZENOH_UNSTABLE_API_FEATURE = "${@ ["", "--features=unstable"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]}"
 
 CARGO_BUILD_FLAGS:append = " ${ZENOH_SHARED_MEMORY_FEATURE} ${ZENOH_UNSTABLE_API_FEATURE}"
+CARGO_INSTALL_LIBRARIES = "1"
 
 RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
 
@@ -35,7 +36,10 @@ do_install:append() {
 
     install -d -m 755 -o zenohd -g zenohd ${D}${localstatedir}/zenohd
 
-    rm ${D}${rustlibdir}/libzenoh_backend_example.so ${D}${rustlibdir}/libzenoh_plugin_example.so
+    rm ${D}${rustlibdir}/libzenoh_backend_example.so \
+        ${D}${rustlibdir}/libzenoh_plugin_example.so \
+        ${D}${rustlibdir}/*.rlib
+
 }
 
 FILES:${PN} = " \
