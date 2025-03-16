@@ -38,11 +38,7 @@ do_install:append() {
     rm ${D}${rustlibdir}/libzenoh_backend_example.so ${D}${rustlibdir}/libzenoh_plugin_example.so
 }
 
-FILES:${PN} = " \
-    ${bindir}/zenohd \
-    ${rustlibdir}/libzenoh_plugin_rest.so \
-    ${rustlibdir}/libzenoh_plugin_storage_manager.so \
-    ${systemd_system_unitdir}/zenohd.service \
+FILES:${PN} += " \
     ${sysconfdir}/zenohd/zenohd.json5 \
     ${localstatedir}/zenohd \
 "
