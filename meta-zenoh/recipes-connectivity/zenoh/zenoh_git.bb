@@ -19,12 +19,16 @@ USERADD_PARAM:${PN} = "-r -s /bin/false zenohd"
 
 SYSTEMD_SERVICE:${PN} = "zenohd.service"
 
-ZENOH_SHARED_MEMORY_FEATURE = "${@ ["", "--features=shared-memory"][bb.utils.to_boolean(d.getVar("ZENOH_SHARED_MEMORY"))]}"
-ZENOH_SHARED_MEMORY_FEATURE[vardeps] += "ZENOH_SHARED_MEMORY"
-ZENOH_UNSTABLE_API_FEATURE = "${@ ["", "--features=unstable"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]}"
-ZENOH_UNSTABLE_API_FEATURE[vardeps] += "ZENOH_UNSTABLE_API"
+PACKAGECONFIG ??= "\
+    ${@["", "shared-memory"][bb.utils.to_boolean(d.getVar('ZENOH_SHARED_MEMORY', False))]} \
+    ${@["", "unstable-api"][bb.utils.to_boolean(d.getVar('ZENOH_UNSTABLE_API', False))]} \
+"
+PACKAGECONFIG[vardeps] += "ZENOH_SHARED_MEMORY ZENOH_UNSTABLE_API"
 
-CARGO_BUILD_FLAGS:append = " ${ZENOH_SHARED_MEMORY_FEATURE} ${ZENOH_UNSTABLE_API_FEATURE}"
+PACKAGECONFIG[shared-memory] = "--features=shared-memory,,,"
+PACKAGECONFIG[unstable-api] = "--features=unstable,,,"
+
+CARGO_BUILD_FLAGS:append = " ${PACKAGECONFIG_CONFARGS}"
 
 RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
 

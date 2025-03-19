@@ -1,0 +1,26 @@
+From 5c4ce6283366870a31f8863945d2695f58bfaed4 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Wed, 19 Mar 2025 16:00:08 +0100
+Subject: [PATCH] add USES_TERMINAL for Ninja build
+
+Upstream-Status: Pending
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index da6be5e6..730155a8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -248,6 +248,7 @@ add_custom_command(
+ 	VERBATIM
+ 	COMMAND_EXPAND_LISTS
+ 	DEPENDS "${rust_sources}"
++	USES_TERMINAL
+ )
+ add_custom_target(cargo ALL DEPENDS "${libs}")
+ 
+-- 
+2.48.1
+
