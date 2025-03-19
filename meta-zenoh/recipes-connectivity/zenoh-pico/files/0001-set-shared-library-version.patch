@@ -1,0 +1,26 @@
+From a07888153a7ea79e885c6fd6e260c309d7ca60a7 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Tue, 18 Mar 2025 22:42:13 +0100
+Subject: [PATCH] set shared library version
+
+Upstream-Status: Pending
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a52eb680..c7907938 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -126,6 +126,7 @@ endif()
+ if(PICO_SHARED)
+   add_library(${Libname}_shared SHARED)
+   set_target_properties(${Libname}_shared PROPERTIES OUTPUT_NAME ${Libname})
++  set_target_properties(${Libname}_shared PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+   add_library(zenohpico::shared ALIAS ${Libname}_shared)
+ endif()
+ if(BUILD_SHARED_LIBS)
+-- 
+2.48.1
+
