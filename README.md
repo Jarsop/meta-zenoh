@@ -34,7 +34,9 @@ kas build poky-zenoh.yml
 
 ## Features
 
-Zenoh provides a set of features that can be enabled/disabled in the `local.conf` file.
+Zenoh provides a set of features that can be enabled/disabled by `PACKAGECONFIG` in each recipe.
+Moreover a facility regarding `shared-memory` and `unstable-api` is provided to enable/disable globally
+these features in the `local.conf` file.
 The following features are available:
 
 - `shared-memory`: Enable shared memory transport (`ZENOH_SHARED_MEMORY`)
@@ -69,12 +71,19 @@ kas build poky-zenoh.yml:shared-memory.yml:unstable-api.yml
 ## Zenoh-cpp backend
 
 `zenoh-cpp` allows you to choose between several backends.
-Analogous variables can be set in your configuration as follows:
+You can set it via `PACKAGECONFIG` in a `bbappend`:
 
 ```bash
 # Default values
-ZENOHCXX_ZENOHC = "1" # or "true"
-ZENOHCXX_ZENOHPICO = "0" # or "false"
+PACKAGECONFIG = "zenoh-c"
+# Or for zenoh-pico backend
+PACKAGECONFIG = "zenoh-pico"
+```
+
+Or in your `local.conf`:
+
+```bash
+PACKAGECONFIG:pn-zenoh-cpp = " zenoh-c"
 ```
 
 `kas` facility files are provided as follows:
