@@ -1,0 +1,31 @@
+From b718b12af4fe08bd41403e36cd110612d352b044 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Sun, 16 Mar 2025 15:57:41 +0100
+Subject: [PATCH 3/3] use --frozen and set right soname in build.rs
+
+Upstream-Status: Pending
+
+---
+ build.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+Index: git/build.rs
+===================================================================
+--- git.orig/build.rs
++++ git/build.rs
+@@ -98,6 +98,7 @@ fn main() {
+     println!("cargo:rerun-if-changed=cbindgen.toml");
+     println!("cargo:rerun-if-changed=build-resources");
+     println!("cargo:rerun-if-changed=include");
++    println!("cargo:rustc-cdylib-link-arg=-Wl,-soname,libzenohc.so.1");
+ }
+ 
+ fn get_build_rs_path() -> PathBuf {
+@@ -138,6 +139,7 @@ fn produce_opaque_types_data() -> PathBu
+         .arg(target)
+         .arg("--manifest-path")
+         .arg(manifest_path)
++        .arg("--frozen")
+         .stderr(stdio)
+         .output()
+         .unwrap();
