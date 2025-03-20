@@ -28,11 +28,6 @@ PACKAGECONFIG[vardeps] += "ZENOH_SHARED_MEMORY ZENOH_UNSTABLE_API"
 PACKAGECONFIG[shared-memory] = "--features=shared-memory,,,"
 PACKAGECONFIG[unstable-api] = "--features=unstable,,,"
 
-ZENOH_SHARED_MEMORY_FEATURE = "${@ ["", "--features=shared-memory"][bb.utils.to_boolean(d.getVar("ZENOH_SHARED_MEMORY"))]}"
-ZENOH_SHARED_MEMORY_FEATURE[vardeps] += "ZENOH_SHARED_MEMORY"
-ZENOH_UNSTABLE_API_FEATURE = "${@ ["", "--features=unstable"][bb.utils.to_boolean(d.getVar("ZENOH_UNSTABLE_API"))]}"
-ZENOH_UNSTABLE_API_FEATURE[vardeps] += "ZENOH_UNSTABLE_API"
-
 CARGO_BUILD_FLAGS:append = " ${PACKAGECONFIG_CONFARGS}"
 CARGO_INSTALL_LIBRARIES = "1"
 
