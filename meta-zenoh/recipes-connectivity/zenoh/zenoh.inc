@@ -5,14 +5,9 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=530d837aca648e45704db71dedff39c4"
 
 SRC_URI = "git://github.com/eclipse-zenoh/zenoh.git;protocol=https;nobranch=1"
 
-PV = "1.2.1"
-SRCREV = "4af922f701c57e270081ab1f8fd5e6ca6c2d65f5"
-
 S = "${WORKDIR}/git"
 
 inherit cargo useradd systemd
-
-include ${BPN}-crates.inc
 
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM:${PN} = "-r -s /bin/false zenohd"
