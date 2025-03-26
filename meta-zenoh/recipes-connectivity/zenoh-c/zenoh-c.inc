@@ -13,13 +13,7 @@ SRC_URI = "\
     file://0001-use-crates.io-registry.patch \
     file://0002-update-lockfiles.patch \
     file://0003-use-frozen-and-set-right-soname-in-build.rs.patch \
-    file://0004-add-USES_TERMINAL-for-Ninja-build.patch \
 "
-
-include ${BPN}-crates.inc
-
-PV = "1.2.1"
-SRCREV = "95af166fc0b8b1682437af908b0a1ef58839afb9"
 
 S = "${WORKDIR}/git"
 B = "${S}"
@@ -38,6 +32,7 @@ PACKAGECONFIG[unstable-api] = "-DZENOHC_BUILD_WITH_UNSTABLE_API=ON, -DZENOHC_BUI
 EXTRA_OECMAKE = "\
     -DZENOHC_CARGO_FLAGS='${ZENOHC_CARGO_FLAGS}' \
     -DZENOHC_CUSTOM_TARGET=${HOST_SYS} \
+    -DZENOHC_BUILD_IN_SOURCE_TREE=ON \
 "
 
 RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
@@ -48,6 +43,7 @@ do_configure() {
     cargo_common_do_configure
     cmake_do_configure
 }
+do_configure[postfuncs] += "cargo_common_do_patch_paths"
 
 # Override progress handler with cargo style.
 # As cmake.bbclass set progress handler with python anonymous function and 
@@ -85,13 +81,14 @@ do_install() {
     cmake_do_install
     # Yocto requires shared libraries to have a version number
     # and consider .so as a symlink to the versioned library for the dev package.
-    mv ${D}${libdir}/libzenohc.so ${D}${libdir}/libzenohc.so.1.2.1
+    major="$(echo ${PV} | cut -d. -f1)"
+    mv ${D}${libdir}/libzenohc.so ${D}${libdir}/libzenohc.so.${PV}
     cd ${D}${libdir}
-    ln -s libzenohc.so.1.2.1 libzenohc.so.1
-    ln -s libzenohc.so.1 libzenohc.so
+    ln -s libzenohc.so.${PV} libzenohc.so.${major}
+    ln -s libzenohc.so.${major} libzenohc.so
 
     install -d ${D}${bindir}
-    for f in ${B}/release/target/${HOST_SYS}/release/examples/z_*; do
+    for f in ${B}/target/${HOST_SYS}/release/examples/z_*; do
         echo "Installing ${f}"
         install -m 755 $f ${D}${bindir}/$(basename $f)_c
     done
