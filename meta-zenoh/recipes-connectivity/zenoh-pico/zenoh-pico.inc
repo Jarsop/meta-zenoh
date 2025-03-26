@@ -15,9 +15,6 @@ SRC_URI = "\
     file://0001-set-shared-library-version.patch \
 "
 
-PV = "1.2.1"
-SRCREV = "f9c59bb19c2fb4204e1f6348fb74a45882dd17af"
-
 S = "${WORKDIR}/git"
 
 FRAG_MAX_SIZE ?= "300000"
