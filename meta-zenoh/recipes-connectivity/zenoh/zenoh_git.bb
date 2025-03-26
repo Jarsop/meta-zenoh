@@ -28,7 +28,6 @@ PACKAGECONFIG[vardeps] += "ZENOH_SHARED_MEMORY ZENOH_UNSTABLE_API"
 PACKAGECONFIG[shared-memory] = "--features=shared-memory,,,"
 PACKAGECONFIG[unstable-api] = "--features=unstable,,,"
 
-CARGO_BUILD_FLAGS:append = " ${PACKAGECONFIG_CONFARGS}"
 CARGO_INSTALL_LIBRARIES = "1"
 
 RUSTFLAGS:append = " -Cpanic=${RUST_PANIC_STRATEGY}"
