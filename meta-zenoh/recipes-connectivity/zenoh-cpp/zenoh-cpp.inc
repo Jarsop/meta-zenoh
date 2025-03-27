@@ -9,15 +9,12 @@ PACKAGES =+ "${PN}-examples"
 
 SRC_URI = "git://github.com/eclipse-zenoh/zenoh-cpp.git;protocol=https;nobranch=1"
 
-PV = "1.2.1"
-SRCREV = "3f11bc5900efd39b816c9762be44f8193c250f47"
-
 S = "${WORKDIR}/git"
 
 PACKAGECONFIG ??= "zenoh-c"
 
-PACKAGECONFIG[zenoh-c] = "-DZENOHCXX_ZENOHC=ON, -DZENOHCXX_ZENOHC=OFF, zenoh-c, zenoh-c"
-PACKAGECONFIG[zenoh-pico] = "-DZENOHCXX_ZENOHPICO=ON, -DZENOHCXX_ZENOHPICO=OFF, zenoh-pico, zenoh-pico"
+PACKAGECONFIG[zenoh-c] = "-DZENOHCXX_ZENOHC=ON, -DZENOHCXX_ZENOHC=OFF, zenoh-c (= ${PV}), zenoh-c (= ${PV})"
+PACKAGECONFIG[zenoh-pico] = "-DZENOHCXX_ZENOHPICO=ON, -DZENOHCXX_ZENOHPICO=OFF, zenoh-pico (= ${PV}), zenoh-pico (= ${PV})"
 
 EXTRA_OECMAKE = "\
     -DZENOHCXX_EXAMPLES_PROTOBUF=OFF \
