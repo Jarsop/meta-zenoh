@@ -1,0 +1,35 @@
+From 11cc33d58053ebd75079dca14818a585a88de1a2 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Wed, 26 Mar 2025 21:19:59 +0100
+Subject: [PATCH 3/3] use --frozen and set right soname in build.rs
+
+Upstream-Status: Pending
+
+Signed-off-by: Jean-Pierre Geslin <jarsop@outlook.com>
+---
+ build.rs                          | 1 +
+ buildrs/opaque_types_generator.rs | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/build.rs b/build.rs
+index 86691429..56641522 100644
+--- a/build.rs
++++ b/build.rs
+@@ -17,4 +17,5 @@ fn main() {
+     println!("cargo:rerun-if-changed=cbindgen.toml");
+     println!("cargo:rerun-if-changed=build-resources");
+     println!("cargo:rerun-if-changed=include");
++    println!("cargo:rustc-cdylib-link-arg=-Wl,-soname,libzenohc.so.1");
+ }
+diff --git a/buildrs/opaque_types_generator.rs b/buildrs/opaque_types_generator.rs
+index 2dbde5f8..44da817c 100644
+--- a/buildrs/opaque_types_generator.rs
++++ b/buildrs/opaque_types_generator.rs
+@@ -103,6 +103,7 @@ fn produce_opaque_types_data() -> PathBuf {
+         .arg(target)
+         .arg("--manifest-path")
+         .arg(manifest_path)
++        .arg("--frozen")
+         .stderr(stdio)
+         .output()
+         .unwrap();
