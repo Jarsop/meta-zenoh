@@ -1,0 +1,3 @@
+require ${BPN}.inc
+
+SRCREV = "018018385dc46f3b3f1b69e04d74975f1244c4fd"
