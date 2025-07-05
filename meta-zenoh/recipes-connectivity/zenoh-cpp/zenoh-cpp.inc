@@ -9,8 +9,6 @@ PACKAGES =+ "${PN}-examples"
 
 SRC_URI = "git://github.com/eclipse-zenoh/zenoh-cpp.git;protocol=https;nobranch=1"
 
-S = "${WORKDIR}/git"
-
 PACKAGECONFIG ??= "zenoh-c"
 
 PACKAGECONFIG[zenoh-c] = "-DZENOHCXX_ZENOHC=ON, -DZENOHCXX_ZENOHC=OFF, zenoh-c (= ${PV}), zenoh-c (= ${PV})"
