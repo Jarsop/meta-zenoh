@@ -15,8 +15,6 @@ SRC_URI = "\
     file://0001-set-shared-library-version.patch \
 "
 
-S = "${WORKDIR}/git"
-
 FRAG_MAX_SIZE ?= "300000"
 FRAG_MAX_SIZE[doc] = "Use this to override the maximum size for fragmented messages"
 BATCH_UNICAST_SIZE ?= "65535"
