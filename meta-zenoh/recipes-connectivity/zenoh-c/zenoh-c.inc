@@ -15,7 +15,6 @@ SRC_URI = "\
     file://0003-use-frozen-and-set-right-soname-in-build.rs.patch \
 "
 
-S = "${WORKDIR}/git"
 B = "${S}"
 
 ZENOHC_CARGO_FLAGS = "-v;--frozen"
