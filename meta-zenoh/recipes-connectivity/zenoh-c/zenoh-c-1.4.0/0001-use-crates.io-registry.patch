@@ -1,0 +1,88 @@
+From 98c85ccad9861253b82b32d2f3f584b1e7f35106 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Sat, 24 May 2025 23:01:15 +0200
+Subject: [PATCH 1/2] use crates.io registry
+
+Upstream-Status: Pending
+Signed-off-by: Jean-Pierre Geslin <jarsop@outlook.com>
+---
+ Cargo.toml                              | 10 +++++-----
+ Cargo.toml.in                           | 10 +++++-----
+ build-resources/opaque-types/Cargo.toml |  6 +++---
+ 3 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index b7a72147..a862f541 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -73,17 +73,17 @@ spin = "0.9.5"
+ tokio = "*"
+ unwrap-infallible = "0.1.5"
+ const_format = "0.2.32"
+-zenoh = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features = ["internal"] }
+-zenoh-ext = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features=["internal"] }
+-zenoh-runtime = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0" }
+-zenoh-util = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0" }
++zenoh = { version = "1.4.0", default-features = false, features = ["internal"] }
++zenoh-ext = { version = "1.4.0", default-features = false, features=["internal"] }
++zenoh-runtime = { version = "1.4.0" }
++zenoh-util = { version = "1.4.0" }
+ flume = "*"
+ 
+ [target.'cfg(unix)'.dependencies]
+ ctor = "0.4.1"
+ 
+ [build-dependencies]
+-zenoh = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features = ["internal"] }
++zenoh = { version = "1.4.0", default-features = false, features = ["internal"] }
+ cbindgen = "0.28.0"
+ fs2 = "0.4.3"
+ regex = "1.7.1"
+diff --git a/Cargo.toml.in b/Cargo.toml.in
+index 894ef445..6870e2c5 100644
+--- a/Cargo.toml.in
++++ b/Cargo.toml.in
+@@ -73,17 +73,17 @@ spin = "0.9.5"
+ tokio = "*"
+ unwrap-infallible = "0.1.5"
+ const_format = "0.2.32"
+-zenoh = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features = ["internal"] }
+-zenoh-ext = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features=["internal"] }
+-zenoh-runtime = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0" }
+-zenoh-util = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0" }
++zenoh = { version = "1.4.0", default-features = false, features = ["internal"] }
++zenoh-ext = { version = "1.4.0", default-features = false, features=["internal"] }
++zenoh-runtime = { version = "1.4.0" }
++zenoh-util = { version = "1.4.0" }
+ flume = "*"
+ 
+ [target.'cfg(unix)'.dependencies]
+ ctor = "0.4.1"
+ 
+ [build-dependencies]
+-zenoh = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features = ["internal"] }
++zenoh = { version = "1.4.0", default-features = false, features = ["internal"] }
+ cbindgen = "0.28.0"
+ fs2 = "0.4.3"
+ regex = "1.7.1"
+diff --git a/build-resources/opaque-types/Cargo.toml b/build-resources/opaque-types/Cargo.toml
+index ea7bc2eb..9c9c9306 100644
+--- a/build-resources/opaque-types/Cargo.toml
++++ b/build-resources/opaque-types/Cargo.toml
+@@ -27,13 +27,13 @@ panic = [
+ default = ["zenoh/default"]
+ 
+ [dependencies]
+-zenoh = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features = [
++zenoh = { version = "1.4.0", default-features = false, features = [
+     "internal",
+ ] }
+-zenoh-ext = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0", default-features = false, features = [
++zenoh-ext = { version = "1.4.0", default-features = false, features = [
+     "internal",
+ ] }
+-zenoh-protocol = { version = "1.4.0", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.4.0" }
++zenoh-protocol = { version = "1.4.0" }
+ const_format = "0.2.32"
+ flume = "*"
+ tokio = "*"
