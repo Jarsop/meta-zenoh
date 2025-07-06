@@ -12,7 +12,6 @@ SRC_URI = "\
     git://github.com/eclipse-zenoh/zenoh-c.git;protocol=https;nobranch=1 \
     file://0001-use-crates.io-registry.patch \
     file://0002-update-lockfiles.patch \
-    file://0003-use-frozen-and-set-right-soname-in-build.rs.patch \
 "
 
 B = "${S}"
