@@ -23,6 +23,8 @@ BATCH_UNICAST_SIZE ?= "65535"
 BATCH_UNICAST_SIZE[doc] = "Use this to override the maximum unicast batch size"
 BATCH_MULTICAST_SIZE ?= "8192"
 BATCH_MULTICAST_SIZE[doc] = "Use this to override the maximum multicast batch size"
+CONFIG_SOCKET_TIMEOUT ?= "100"
+CONFIG_SOCKET_TIMEOUT[doc] = "Default socket timeout in milliseconds"
 
 # PACKAGING=yocto is used to enable both shared and static libraries in the build,
 # it doesn't trigger any more behavior in the build system as it matches only
@@ -38,6 +40,7 @@ EXTRA_OECMAKE = "\
     -DFRAG_MAX_SIZE=${FRAG_MAX_SIZE} \
     -DBATCH_UNICAST_SIZE=${BATCH_UNICAST_SIZE} \
     -DBATCH_MULTICAST_SIZE=${BATCH_MULTICAST_SIZE} \
+    -DZ_CONFIG_SOCKET_TIMEOUT=${CONFIG_SOCKET_TIMEOUT} \
 "
 
 do_install:append() {
