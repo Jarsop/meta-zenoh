@@ -93,3 +93,5 @@ do_install() {
 }
 
 FILES:${PN}-examples = "${bindir}/z_*"
+
+BBCLASSEXTEND = "native nativesdk"
