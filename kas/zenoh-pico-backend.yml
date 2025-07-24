@@ -3,4 +3,4 @@ header:
 
 local_conf_header:
   zenoh_pico_backend: |
-    PACKAGECONFIG:append:pn-zenoh-cpp = " zenoh-pico"
+    ZENOHCPP_BACKEND:append = " zenoh-pico"
