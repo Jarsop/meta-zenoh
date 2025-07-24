@@ -35,7 +35,7 @@ do_install:append() {
     install -d 755 ${D}${sysconfdir}/zenohd
     install -m 644 ${S}/DEFAULT_CONFIG.json5 ${D}${sysconfdir}/zenohd/zenohd.json5
 
-    install -d -m 755 -o zenohd -g zenohd ${D}${localstatedir}/zenohd
+    install -d -m 755 ${D}${localstatedir}/zenohd
 
     rm ${D}${rustlibdir}/libzenoh_backend_example.so \
         ${D}${rustlibdir}/libzenoh_plugin_example.so \
@@ -43,7 +43,13 @@ do_install:append() {
 
 }
 
+do_install:append:class-target() {
+    chown -R zenohd:zenohd ${D}${localstatedir}/zenohd
+}
+
 FILES:${PN} += " \
     ${sysconfdir}/zenohd/zenohd.json5 \
     ${localstatedir}/zenohd \
 "
+
+BBCLASSEXTEND = "native nativesdk"
