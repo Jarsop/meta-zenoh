@@ -50,3 +50,5 @@ do_install:append() {
 }
 
 FILES:${PN}-examples = "${bindir}/z_*"
+
+BBCLASSEXTEND = "native nativesdk"
