@@ -9,8 +9,10 @@ PACKAGES =+ "${PN}-examples"
 
 SRC_URI = "git://github.com/eclipse-zenoh/zenoh-cpp.git;protocol=https;nobranch=1"
 
-PACKAGECONFIG ??= "zenoh-c"
+ZENOHCPP_BACKEND ?= "zenoh-c"
+ZENOHCPP_BACKEND[doc] = "Set the backend to use for zenoh-cpp, either zenoh-c or zenoh-pico. The default is zenoh-c"
 
+PACKAGECONFIG ??= "${ZENOHCPP_BACKEND}"
 PACKAGECONFIG[zenoh-c] = "-DZENOHCXX_ZENOHC=ON, -DZENOHCXX_ZENOHC=OFF, zenoh-c (= ${PV}), zenoh-c (= ${PV})"
 PACKAGECONFIG[zenoh-pico] = "-DZENOHCXX_ZENOHPICO=ON, -DZENOHCXX_ZENOHPICO=OFF, zenoh-pico (= ${PV}), zenoh-pico (= ${PV})"
 
