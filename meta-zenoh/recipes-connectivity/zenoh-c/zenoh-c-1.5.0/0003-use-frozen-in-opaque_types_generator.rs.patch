@@ -1,0 +1,33 @@
+From 18c99d5e58924148dd19e0c15479f39515ab9c5d Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Sat, 26 Jul 2025 21:19:44 +0200
+Subject: [PATCH 3/3] use --frozen in opaque_types_generator.rs
+
+trim also CR in output file.
+
+Upstream-Status: Pending
+Signed-off-by: Jean-Pierre Geslin <jarsop@outlook.com>
+---
+ buildrs/opaque_types_generator.rs | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/buildrs/opaque_types_generator.rs b/buildrs/opaque_types_generator.rs
+index 29fa1dd8..90403915 100644
+--- a/buildrs/opaque_types_generator.rs
++++ b/buildrs/opaque_types_generator.rs
+@@ -17,6 +17,7 @@ pub fn generate_opaque_types() {
+ 
+     // Count the total number of errors in the input data
+     let total_error_count = data_in
++        .replace('\r', "\n")
+         .lines()
+         .filter(|line| line.starts_with("error[E"))
+         .count();
+@@ -123,6 +124,7 @@ fn produce_opaque_types_data() -> (String, PathBuf) {
+         .arg(target)
+         .arg("--manifest-path")
+         .arg(manifest_path)
++        .arg("--frozen")
+         .arg("--target-dir")
+         .arg(get_out_rs_path().join("./build_resources/opaque_types"));
+     let command_str = format!("{:?}", command);
