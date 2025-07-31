@@ -1,0 +1,18 @@
+header:
+  version: 18
+  includes:
+    - poky-zenoh.yml
+
+# zenoh-c and zenoh-pico will be built with the zenoh-cpp backend
+target:
+  - zenoh
+  - zenoh-cpp
+  - zenoh-native
+  - zenoh-cpp-native
+
+local_conf_header:
+  sstate_mirrors: |
+    BB_HASHSERVE_UPSTREAM = "wss://hashserv.yoctoproject.org/ws"
+    SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
+    BB_HASHSERVE = "auto"
+    BB_SIGNATURE_HANDLER = "OEEquivHash"
