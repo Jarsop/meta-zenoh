@@ -1,0 +1,22 @@
+header:
+  version: 18
+  includes:
+    - poky-zenoh.yml
+
+# zenoh-c and zenoh-pico will be built with the zenoh-cpp backend
+target:
+  - zenoh
+  - zenoh-cpp
+  - zenoh-native
+  - zenoh-cpp-native
+
+local_conf_header:
+  reduce_diskspace: |
+    INHERIT += "rm_work"
+  sstate_mirrors: |
+    BB_HASHSERVE_UPSTREAM = "hashserv.yoctoproject.org:8686"
+    SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
+    BB_HASHSERVE = "auto"
+    BB_SIGNATURE_HANDLER = "OEEquivHash"
+  reduce_distro_feature: |
+    DISTRO_FEATURES:remove = "alsa bluetooth debuginfod pcmcia usbgadget usbhost nfs pci 3g nfc x11 vfat opengl ptest wayland vulkan pulseaudio"
