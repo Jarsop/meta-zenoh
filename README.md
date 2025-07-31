@@ -1,5 +1,7 @@
 # Zenoh Yocto Layer (non-official)
 
+[![](https://github.com/Jarsop/meta-zenoh/actions/workflows/build.yaml/badge.svg?branch=scarthgap)](https://github.com/Jarsop/meta-zenoh/actions/workflows/build.yaml)
+
 This layer provides [Zenoh](https://zenoh.io) recipes for the Yocto Project.
 Provided recipes:
 
