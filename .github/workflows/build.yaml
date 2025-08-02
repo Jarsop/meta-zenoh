@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths-ignore:
-      - "**/README.md"
+      - README
   pull_request:
     branches:
       - master
     paths-ignore:
-      - "**/README.md"
+      - README
 
 jobs:
   build:
