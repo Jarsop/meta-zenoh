@@ -14,6 +14,7 @@ SRC_URI = "\
     file://0002-update-lockfiles.patch \
 "
 
+S = "${WORKDIR}/git"
 B = "${S}"
 
 ZENOHC_CARGO_FLAGS = "-v;--frozen"

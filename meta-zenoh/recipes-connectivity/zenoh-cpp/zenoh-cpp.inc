@@ -9,6 +9,8 @@ PACKAGES =+ "${PN}-examples"
 
 SRC_URI = "git://github.com/eclipse-zenoh/zenoh-cpp.git;protocol=https;nobranch=1"
 
+S = "${WORKDIR}/git"
+
 ZENOHCPP_BACKEND ?= "zenoh-c"
 ZENOHCPP_BACKEND[doc] = "Set the backend to use for zenoh-cpp, either zenoh-c or zenoh-pico. The default is zenoh-c"
 
