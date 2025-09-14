@@ -43,7 +43,7 @@ runs:
     - name: List built RPMs and native components
       shell: bash
       run: |
-        find build/tmp/deploy/rpm/core2_64 \
+        find build/tmp/deploy/rpm/x86_64_v3 \
           -name '*zenoh*.rpm' \
           -exec echo -e "\n=== {} ===" \; \
           -exec rpm -qp --queryformat "[%-20{=NAME} %{FILENAMES}\n]" {} \;
