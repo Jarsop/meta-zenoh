@@ -30,7 +30,7 @@ PACKAGECONFIG[unstable-api] = "-DZENOHC_BUILD_WITH_UNSTABLE_API=ON, -DZENOHC_BUI
 
 EXTRA_OECMAKE = "\
     -DZENOHC_CARGO_FLAGS='${ZENOHC_CARGO_FLAGS}' \
-    -DZENOHC_CUSTOM_TARGET=${HOST_SYS} \
+    -DZENOHC_CUSTOM_TARGET=${RUST_HOST_SYS} \
     -DZENOHC_BUILD_IN_SOURCE_TREE=ON \
 "
 
@@ -87,7 +87,7 @@ do_install() {
     ln -s libzenohc.so.${major} libzenohc.so
 
     install -d ${D}${bindir}
-    for f in ${B}/target/${HOST_SYS}/release/examples/z_*; do
+    for f in ${B}/target/${RUST_HOST_SYS}/release/examples/z_*; do
         echo "Installing ${f}"
         install -m 755 $f ${D}${bindir}/$(basename $f)_c
     done
