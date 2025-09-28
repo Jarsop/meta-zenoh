@@ -8,6 +8,8 @@ inherit cmake cargo pkgconfig
 
 PACKAGES =+ "${PN}-examples"
 
+DEPENDS += "patchelf-native"
+
 SRC_URI = "\
     git://github.com/eclipse-zenoh/zenoh-c.git;protocol=https;nobranch=1 \
     file://0001-use-crates.io-registry.patch \
@@ -80,16 +82,20 @@ do_install() {
     cmake_do_install
     # Yocto requires shared libraries to have a version number
     # and consider .so as a symlink to the versioned library for the dev package.
+    # We also need to fix the SONAME of the library.
     major="$(echo ${PV} | cut -d. -f1)"
     mv ${D}${libdir}/libzenohc.so ${D}${libdir}/libzenohc.so.${PV}
     cd ${D}${libdir}
+    ${STAGING_BINDIR_NATIVE}/patchelf --set-soname libzenohc.so.${PV} libzenohc.so.${PV}
     ln -s libzenohc.so.${PV} libzenohc.so.${major}
     ln -s libzenohc.so.${major} libzenohc.so
 
     install -d ${D}${bindir}
     for f in ${B}/target/${RUST_HOST_SYS}/release/examples/z_*; do
-        echo "Installing ${f}"
-        install -m 755 $f ${D}${bindir}/$(basename $f)_c
+        z_example="$(basename $f)_c"
+        echo "Installing ${z_example}"
+        install -m 755 $f ${D}${bindir}/${z_example}
+        ${STAGING_BINDIR_NATIVE}/patchelf --replace-needed libzenohc.so libzenohc.so.${PV} ${D}${bindir}/${z_example}
     done
 }
 
