@@ -3,4 +3,4 @@ header:
 
 local_conf_header:
   zenoh_c_backend: |
-    ZENOHCPP_BACKEND:append = " zenoh-c"
+    ZENOHCPP_BACKEND += "zenoh-c"
