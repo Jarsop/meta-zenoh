@@ -3,12 +3,12 @@ name: Zenoh Yocto Build
 on:
   push:
     branches:
-      - master
+      - walnascar
     paths-ignore:
       - README
   pull_request:
     branches:
-      - master
+      - walnascar
     paths-ignore:
       - README
 
