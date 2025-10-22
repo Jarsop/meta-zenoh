@@ -62,3 +62,5 @@ local_conf_header:
   image: |
     INIT_MANAGER = "systemd"
     CORE_IMAGE_EXTRA_INSTALL = "zenoh"
+  reduce_distro_feature: |
+    DISTRO_FEATURES:remove = "x11 opengl wayland vulkan pulseaudio"

@@ -16,7 +16,7 @@ runs:
       id: kas
       shell: bash
       run: |
-        wget https://github.com/siemens/kas/raw/4.8.1/kas-container -O /tmp/kas
+        wget https://github.com/siemens/kas/raw/5.0/kas-container -O /tmp/kas
         chmod +x /tmp/kas
         echo "KAS=/tmp/kas" >> "${GITHUB_OUTPUT}"
 
@@ -34,6 +34,43 @@ runs:
           BE="${BE}:kas/zenoh-pico-backend.yml"
         fi
         echo "KAS_CONFIG=kas/ci.yml${SHM}${BE}" >> "${GITHUB_OUTPUT}"
+
+    - name: Checkout with kas
+      shell: bash
+      run: |
+        # This needed to trigger necessary dependencies installation before maximizing build space
+        ${{ steps.kas.outputs.KAS }} checkout ${{ steps.config.outputs.KAS_CONFIG }}
+
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        build-mount-path: "${GITHUB_WORKSPACE}/build"
+        root-reserve-mb: 10240
+        swap-size-mb: 2048
+        remove-dotnet: "true"
+        remove-android: "true"
+        remove-haskell: "true"
+        remove-codeql: "true"
+
+    - name: Cache Yocto downloads
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/downloads
+        key: yocto-downloads-${{ hashFiles('kas/*.yml') }}-${{ github.run_id }}
+        restore-keys: |
+          yocto-downloads-${{ hashFiles('kas/*.yml') }}-
+          yocto-downloads-
+
+    - name: Cache Yocto sstate
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/sstate-cache
+        key: yocto-sstate-${{ matrix.shared_memory }}-${{ matrix.zenoh_cpp_backend }}-${{ hashFiles('**/kas*.yml') }}
+        restore-keys: |
+          yocto-sstate-${{ matrix.shared_memory }}-${{ matrix.zenoh_cpp_backend }}-
+          yocto-sstate-
 
     - name: Build with kas
       shell: bash
