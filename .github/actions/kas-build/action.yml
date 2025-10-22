@@ -16,7 +16,7 @@ runs:
       id: kas
       shell: bash
       run: |
-        wget https://github.com/siemens/kas/raw/4.8.1/kas-container -O /tmp/kas
+        wget https://github.com/siemens/kas/raw/5.0/kas-container -O /tmp/kas
         chmod +x /tmp/kas
         echo "KAS=/tmp/kas" >> "${GITHUB_OUTPUT}"
 
@@ -45,9 +45,32 @@ runs:
       uses: easimon/maximize-build-space@master
       with:
         build-mount-path: "${GITHUB_WORKSPACE}/build"
-        root-reserve-mb: 512
-        swap-size-mb: 1024
+        root-reserve-mb: 10240
+        swap-size-mb: 2048
         remove-dotnet: "true"
+        remove-android: "true"
+        remove-haskell: "true"
+        remove-codeql: "true"
+
+    - name: Cache Yocto downloads
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/downloads
+        key: yocto-downloads-${{ hashFiles('kas/*.yml') }}-${{ github.run_id }}
+        restore-keys: |
+          yocto-downloads-${{ hashFiles('kas/*.yml') }}-
+          yocto-downloads-
+
+    - name: Cache Yocto sstate
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/sstate-cache
+        key: yocto-sstate-${{ matrix.shared_memory }}-${{ matrix.zenoh_cpp_backend }}-${{ hashFiles('**/kas*.yml') }}
+        restore-keys: |
+          yocto-sstate-${{ matrix.shared_memory }}-${{ matrix.zenoh_cpp_backend }}-
+          yocto-sstate-
 
     - name: Build with kas
       shell: bash

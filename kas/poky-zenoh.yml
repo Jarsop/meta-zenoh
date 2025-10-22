@@ -30,6 +30,13 @@ repos:
       meta-networking:
       meta-perl:
 
+  meta-clang:
+    url: https://github.com/kraj/meta-clang.git
+    path: layers/meta-clang
+    # TODO: For now scarthgap is supported
+    # switch to `scarthgap-clang20` if necessary
+    branch: walnascar
+
 bblayers_conf_header:
   standard: |
     POKY_BBLAYERS_CONF_VERSION = "2"
@@ -62,3 +69,5 @@ local_conf_header:
   image: |
     INIT_MANAGER = "systemd"
     CORE_IMAGE_EXTRA_INSTALL = "zenoh"
+  reduce_distro_feature: |
+    DISTRO_FEATURES:remove = "x11 opengl wayland vulkan pulseaudio"

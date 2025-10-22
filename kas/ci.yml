@@ -11,8 +11,12 @@ target:
   - zenoh-cpp-native
 
 local_conf_header:
+  reduce_diskspace: |
+    INHERIT += "rm_work"
   sstate_mirrors: |
     BB_HASHSERVE_UPSTREAM = "wss://hashserv.yoctoproject.org/ws"
     SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
     BB_HASHSERVE = "auto"
     BB_SIGNATURE_HANDLER = "OEEquivHash"
+  reduce_distro_feature: |
+    DISTRO_FEATURES:remove = "alsa bluetooth debuginfod pcmcia usbgadget usbhost nfs pci 3g nfc x11 vfat opengl ptest wayland vulkan pulseaudio"
