@@ -34,10 +34,10 @@ repos:
     url: https://github.com/meta-rust/meta-rust.git
     path: layers/meta-rust
     branch: master
-    patches:
-      data-layout:
-        repo: zenoh
-        path: kas/patches/0001-Revert-rust-common-Update-data-layout-for-x86_64-unk.patch
+    # patches:
+    #   data-layout:
+    #     repo: zenoh
+    #     path: kas/patches/0001-Revert-rust-common-Update-data-layout-for-x86_64-unk.patch
 
   meta-clang:
     url: https://github.com/kraj/meta-clang.git
@@ -72,7 +72,7 @@ local_conf_header:
         HALT,/tmp,10M,1K"
   rust: |
     include conf/distro/include/rust_versions.inc
-    RUST_VERSION = "1.75.0"
+    # RUST_VERSION = "1.75.0"
     # RUST_PANIC_STRATEGY = "abort"
     # RM_WORK_EXCLUDE += "zenoh zenoh-c"
   image: |
