@@ -1,5 +1,5 @@
 build
 layers
-kas/*.lock.yml
 .kas_shell_history
-.vscode
+kas/*.lock.yml
+.vscode.vscode
