@@ -37,7 +37,12 @@ repos:
     patches:
       data-layout:
         repo: zenoh
-        path: kas/patches/0001-Revert-rust-common-Update-data-layout-for-x86_64-unk.patch 
+        path: kas/patches/0001-Revert-rust-common-Update-data-layout-for-x86_64-unk.patch
+
+  meta-clang:
+    url: https://github.com/kraj/meta-clang.git
+    path: layers/meta-clang
+    branch: kirkstone-clang18
 
 bblayers_conf_header:
   standard: |
@@ -73,3 +78,5 @@ local_conf_header:
   image: |
     INIT_MANAGER = "systemd"
     CORE_IMAGE_EXTRA_INSTALL = "zenoh"
+  reduce_distro_feature: |
+    DISTRO_FEATURES:remove = "x11 opengl wayland vulkan pulseaudio"

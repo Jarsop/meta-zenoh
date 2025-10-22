@@ -44,7 +44,6 @@ do_configure() {
     cargo_common_do_configure
     cmake_do_configure
 }
-do_configure[postfuncs] += "cargo_common_do_patch_paths"
 
 # Override progress handler with cargo style.
 # As cmake.bbclass set progress handler with python anonymous function and 
