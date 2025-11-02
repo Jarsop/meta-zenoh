@@ -5,28 +5,98 @@ on:
     branches:
       - scarthgap
     paths-ignore:
-      - "**/README.md"
+      - "**.md"
+      - .gitignore
   pull_request:
     branches:
       - scarthgap
     paths-ignore:
-      - "**/README.md"
+      - "**.md"
+      - .gitignore
 
 jobs:
-  build:
+  build-base:
     runs-on: ubuntu-24.04
-    timeout-minutes: 720
+    timeout-minutes: 360
     strategy:
+      fail-fast: false
+      matrix:
+        shared_memory: [shm, no-shm]
+        component: [zenoh, zenoh-pico]
+
+    steps:
+      - name: Skip duplicate actions
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "true"
+          do_not_skip: '["workflow_dispatch", "schedule"]'
+          paths_ignore: '["**.md", ".gitignore"]'
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build base component
+        uses: ./.github/actions/kas-build
+        with:
+          shared_memory: ${{ matrix.shared_memory }}
+          build_stage: "base"
+          component: ${{ matrix.component }}
+
+  build-zenoh-c:
+    needs: build-base
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shared_memory: [shm, no-shm]
+
+    steps:
+      - name: Skip duplicate actions
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "true"
+          do_not_skip: '["workflow_dispatch", "schedule"]'
+          paths_ignore: '["**.md", ".gitignore"]'
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build zenoh-c
+        uses: ./.github/actions/kas-build
+        with:
+          shared_memory: ${{ matrix.shared_memory }}
+          build_stage: "c-api"
+          component: "zenoh-c"
+
+  build-zenoh-cpp:
+    needs: [build-base, build-zenoh-c]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
       matrix:
         shared_memory: [shm, no-shm]
         zenoh_cpp_backend: [zenoh-c, zenoh-pico, both]
 
     steps:
+      - name: Skip duplicate actions
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "true"
+          do_not_skip: '["workflow_dispatch", "schedule"]'
+          paths_ignore: '["**.md", ".gitignore"]'
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build Zenoh recipes
+      - name: Build zenoh-cpp
         uses: ./.github/actions/kas-build
         with:
           shared_memory: ${{ matrix.shared_memory }}
+          build_stage: "cpp"
           zenoh_cpp_backend: ${{ matrix.zenoh_cpp_backend }}
+          component: "zenoh-cpp"

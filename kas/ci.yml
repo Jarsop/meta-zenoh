@@ -1,22 +1,30 @@
 header:
   version: 18
   includes:
-    - poky-zenoh.yml
+    - kas/poky-zenoh.yml
 
-# zenoh-c and zenoh-pico will be built with the zenoh-cpp backend
-target:
-  - zenoh
-  - zenoh-cpp
-  - zenoh-native
-  - zenoh-cpp-native
+target: []
 
 local_conf_header:
   reduce_diskspace: |
     INHERIT += "rm_work"
+    RM_WORK_EXCLUDE += "zenoh zenoh-pico zenoh-c"
+
   sstate_mirrors: |
     BB_HASHSERVE_UPSTREAM = "wss://hashserv.yoctoproject.org/ws"
     SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
     BB_HASHSERVE = "auto"
     BB_SIGNATURE_HANDLER = "OEEquivHash"
-  reduce_distro_feature: |
+
+  ccache_config: |
+    INHERIT += "ccache"
+    CCACHE_DIR = "${TOPDIR}/ccache"
+    CCACHE_MAXSIZE = "5G"
+
+  reduce_distro_features: |
     DISTRO_FEATURES:remove = "alsa bluetooth debuginfod pcmcia usbgadget usbhost nfs pci 3g nfc x11 vfat opengl ptest wayland vulkan pulseaudio"
+
+  parallel_build: |
+    # Optimize for GitHub Actions runners (4 cores, 16GB RAM)
+    BB_NUMBER_THREADS ?= "4"
+    PARALLEL_MAKE ?= "-j 4"
