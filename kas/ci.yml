@@ -2,6 +2,7 @@ header:
   version: 18
   includes:
     - poky-zenoh.yml
+    - kas/poky-zenoh.yml
 
 # zenoh-c and zenoh-pico will be built with the zenoh-cpp backend
 target:

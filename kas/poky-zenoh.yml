@@ -11,12 +11,26 @@ repos:
     layers:
       meta-zenoh:
 
-  poky:
-    url: https://git.yoctoproject.org/git/poky
-    path: layers/poky
+  bitbake:
+    url: https://git.openembedded.org/bitbake
+    path: layers/bitbake
+    # same as poky walnascar
+    branch: "2.12"
+    layers:
+      .: disabled
+
+  oe-core:
+    url: https://git.openembedded.org/openembedded-core
+    path: layers/oe-core
     branch: walnascar
     layers:
       meta:
+
+  meta-yocto:
+    url: https://git.yoctoproject.org/git/meta-yocto
+    path: layers/meta-yocto
+    branch: walnascar
+    layers:
       meta-poky:
       meta-yocto-bsp:
 
