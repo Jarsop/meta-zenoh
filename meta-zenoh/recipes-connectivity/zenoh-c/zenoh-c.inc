@@ -75,6 +75,8 @@ do_compile_examples() {
     cmake_runcmake_build --target examples
 }
 
+DEBUG_PREFIX_MAP += "-ffile-prefix-map=${CARGO_VENDORING_DIRECTORY}=${TARGET_DBGSRC_DIR}"
+
 # Here we want to use the CMake install target
 # and accord it to Yocto's needs as non-intrusive as possible
 do_install() {
