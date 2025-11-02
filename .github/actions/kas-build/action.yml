@@ -3,11 +3,18 @@ description: "Build steps for Zenoh recipes using kas"
 
 inputs:
   shared_memory:
-    description: "Shared memory option"
+    description: "Shared memory option (shm or no-shm)"
+    required: true
+  build_stage:
+    description: "Build stage (base, c-api, cpp)"
+    required: true
+  component:
+    description: "Component to build (zenoh, zenoh-pico, zenoh-c, zenoh-cpp)"
     required: true
   zenoh_cpp_backend:
-    description: "Zenoh C++ backend option"
-    required: true
+    description: "Zenoh C++ backend option (for cpp stage only)"
+    required: false
+    default: "none"
 
 runs:
   using: composite
@@ -20,31 +27,40 @@ runs:
         chmod +x /tmp/kas
         echo "KAS=/tmp/kas" >> "${GITHUB_OUTPUT}"
 
-    - name: Select kas config
+    - name: Select kas config and targets
       id: config
       shell: bash
       run: |
-        if [ "${{ matrix.shared_memory }}" = "shm" ]; then
+        BASE_CONFIG="kas/ci.yml"
+
+        # Shared memory configuration
+        if [ "${{ inputs.shared_memory }}" = "shm" ]; then
           SHM=":kas/shared-memory.yml:kas/unstable-api.yml"
         fi
-        if [[ "${{ matrix.zenoh_cpp_backend }}" =~ ^(zenoh-c|both)$ ]]; then
-          BE=":kas/zenoh-c-backend.yml"
+
+        # Backend configuration only for cpp stage
+        if [ "${{ inputs.build_stage }}" = "cpp" ]; then
+          if [[ "${{ inputs.zenoh_cpp_backend }}" =~ ^(zenoh-c|both)$ ]]; then
+            BE=":kas/zenoh-c-backend.yml"
+          fi
+          if [[ "${{ inputs.zenoh_cpp_backend }}" =~ ^(zenoh-pico|both)$ ]]; then
+            BE="${BE}:kas/zenoh-pico-backend.yml"
+          fi
         fi
-        if [[ "${{ matrix.zenoh_cpp_backend }}" =~ ^(zenoh-pico|both)$ ]]; then
-          BE="${BE}:kas/zenoh-pico-backend.yml"
-        fi
-        echo "KAS_CONFIG=kas/ci.yml${SHM}${BE}" >> "${GITHUB_OUTPUT}"
+
+        echo "KAS_FILES=${BASE_CONFIG}${SHM}${BE}" >> "${GITHUB_OUTPUT}"
+        echo "KAS_TARGET=${{ inputs.component }} ${{ inputs.component }}-native" >> "${GITHUB_OUTPUT}"
 
     - name: Checkout with kas
       shell: bash
       run: |
-        # This needed to trigger necessary dependencies installation before maximizing build space
-        ${{ steps.kas.outputs.KAS }} checkout ${{ steps.config.outputs.KAS_CONFIG }}
+        # Trigger necessary dependencies installation before maximizing build space
+        ${{ steps.kas.outputs.KAS }} checkout ${{ steps.config.outputs.KAS_FILES }}
 
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        build-mount-path: "${GITHUB_WORKSPACE}/build"
+        build-mount-path: "${{ github.workspace }}/build"
         root-reserve-mb: 10240
         swap-size-mb: 2048
         remove-dotnet: "true"
@@ -52,41 +68,55 @@ runs:
         remove-haskell: "true"
         remove-codeql: "true"
 
+    # Shared downloads cache (independent of build configuration)
     - name: Cache Yocto downloads
       uses: actions/cache@v4
       with:
-        path: |
-          build/downloads
-        key: yocto-downloads-${{ hashFiles('kas/*.yml') }}-${{ github.run_id }}
+        path: build/downloads
+        key: yocto-downloads-${{ hashFiles('kas/*.yml', 'meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc') }}
         restore-keys: |
-          yocto-downloads-${{ hashFiles('kas/*.yml') }}-
           yocto-downloads-
 
+    # Hierarchical sstate cache with stage-based fallback
     - name: Cache Yocto sstate
       uses: actions/cache@v4
       with:
-        path: |
-          build/sstate-cache
-        key: yocto-sstate-${{ matrix.shared_memory }}-${{ matrix.zenoh_cpp_backend }}-${{ hashFiles('**/kas*.yml') }}
+        path: build/sstate-cache
+        key: yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-${{ hashFiles('meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc', 'meta-zenoh/**/*.patch') }}
         restore-keys: |
-          yocto-sstate-${{ matrix.shared_memory }}-${{ matrix.zenoh_cpp_backend }}-
+          yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-
+          yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-
+          yocto-sstate-base-${{ inputs.component }}-${{ inputs.shared_memory }}-
+          yocto-sstate-base-zenoh-${{ inputs.shared_memory }}-
           yocto-sstate-
 
     - name: Build with kas
       shell: bash
+      env:
+        KAS_TARGET: ${{ steps.config.outputs.KAS_TARGET }}
       run: |
-        ${{ steps.kas.outputs.KAS }} build ${{ steps.config.outputs.KAS_CONFIG }}
+        echo "Building targets: ${KAS_TARGET}"
+        ${{ steps.kas.outputs.KAS }} build ${{ steps.config.outputs.KAS_FILES }}
 
     - name: List built RPMs and native components
       shell: bash
       run: |
+        echo "=== Built RPM packages ==="
         find build/tmp/deploy/rpm/x86_64_v3 \
           -name '*zenoh*.rpm' \
           -exec echo -e "\n=== {} ===" \; \
-          -exec rpm -qp --queryformat "[%-20{=NAME} %{FILENAMES}\n]" {} \;
+          -exec rpm -qp --queryformat "[%-20{=NAME} %{VERSION}-%{RELEASE}\n]" {} \;
 
+        echo -e "\n=== Native sysroot components ==="
         find build/tmp/sysroots-components/x86_64 \
-          -depth -maxdepth 1 \
-          -name 'zenoh*-native' \
+          -maxdepth 1 -type d -name 'zenoh*-native' \
           -exec echo -e "\n=== {} ===" \; \
-          -exec tree -I sysroot-providers {} \;
+          -exec tree -L 2 -I sysroot-providers {} \;
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: zenoh-${{ inputs.component }}-${{ inputs.build_stage }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-rpms
+        path: build/tmp/deploy/rpm/**/*zenoh*.rpm
+        retention-days: 7
