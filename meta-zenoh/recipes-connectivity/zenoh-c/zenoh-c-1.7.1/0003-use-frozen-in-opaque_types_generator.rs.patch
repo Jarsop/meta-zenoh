@@ -1,0 +1,23 @@
+From f8caf9ded4f21a4834a48f1e523096a7c8fb983d Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Wed, 22 Oct 2025 22:10:42 +0200
+Subject: [PATCH] use --frozen in opaque_types_generator.rs
+
+Upstream-Status: Pending
+Signed-off-by: Jean-Pierre Geslin <jarsop@outlook.com>
+---
+ buildrs/opaque_types_generator.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/buildrs/opaque_types_generator.rs b/buildrs/opaque_types_generator.rs
+index f0cc1271..4e666487 100644
+--- a/buildrs/opaque_types_generator.rs
++++ b/buildrs/opaque_types_generator.rs
+@@ -135,6 +135,7 @@ fn produce_opaque_types_data() -> (String, PathBuf) {
+         .arg(target)
+         .arg("--manifest-path")
+         .arg(manifest_path)
++        .arg("--frozen")
+         .arg("--target-dir")
+         .arg(match std::env::var("OPAQUE_TYPES_BUILD_DIR") {
+             Ok(opaque_types_build_dir) => {
