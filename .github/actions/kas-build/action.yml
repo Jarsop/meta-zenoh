@@ -105,7 +105,7 @@ runs:
         find build/tmp/deploy/rpm \
           -name '*zenoh*.rpm' \
           -exec echo -e "\n=== {} ===" \; \
-          -exec rpm -qp --queryformat "[%-20{=NAME} %{VERSION}-%{RELEASE}\n]" {} \;
+          -exec rpm -qp --queryformat "[%-20{=NAME} %{FILENAMES}\n]" {} \;
 
         echo -e "\n=== Native sysroot components ==="
         find build/tmp/sysroots-components/x86_64 \
