@@ -1,20 +1,11 @@
 name: "Build Zenoh Recipes"
-description: "Build steps for Zenoh recipes using kas"
+description: "Build all Zenoh recipes using kas (shm enabled, both backends)"
 
 inputs:
-  shared_memory:
-    description: "Shared memory option (shm or no-shm)"
-    required: true
-  build_stage:
-    description: "Build stage (base, c-api, cpp)"
-    required: true
-  component:
-    description: "Component to build (zenoh, zenoh-pico, zenoh-c, zenoh-cpp)"
-    required: true
-  zenoh_cpp_backend:
-    description: "Zenoh C++ backend option (for cpp stage only)"
+  force_rebuild:
+    description: "Force full rebuild (ignore cache)"
     required: false
-    default: "none"
+    default: "false"
 
 runs:
   using: composite
@@ -23,39 +14,14 @@ runs:
       id: kas
       shell: bash
       run: |
-        wget https://github.com/siemens/kas/raw/5.0/kas-container -O /tmp/kas
+        wget -q https://github.com/siemens/kas/raw/5.0/kas-container -O /tmp/kas
         chmod +x /tmp/kas
         echo "KAS=/tmp/kas" >> "${GITHUB_OUTPUT}"
-
-    - name: Select kas config and targets
-      id: config
-      shell: bash
-      run: |
-        BASE_CONFIG="kas/ci.yml"
-
-        # Shared memory configuration
-        if [ "${{ inputs.shared_memory }}" = "shm" ]; then
-          SHM=":kas/shared-memory.yml:kas/unstable-api.yml"
-        fi
-
-        # Backend configuration only for cpp stage
-        if [ "${{ inputs.build_stage }}" = "cpp" ]; then
-          if [[ "${{ inputs.zenoh_cpp_backend }}" =~ ^(zenoh-c|both)$ ]]; then
-            BE=":kas/zenoh-c-backend.yml"
-          fi
-          if [[ "${{ inputs.zenoh_cpp_backend }}" =~ ^(zenoh-pico|both)$ ]]; then
-            BE="${BE}:kas/zenoh-pico-backend.yml"
-          fi
-        fi
-
-        echo "KAS_FILES=${BASE_CONFIG}${SHM}${BE}" >> "${GITHUB_OUTPUT}"
-        echo "KAS_TARGET=${{ inputs.component }} ${{ inputs.component }}-native" >> "${GITHUB_OUTPUT}"
 
     - name: Checkout with kas
       shell: bash
       run: |
-        # Trigger necessary dependencies installation before maximizing build space
-        ${{ steps.kas.outputs.KAS }} checkout ${{ steps.config.outputs.KAS_FILES }}
+        ${{ steps.kas.outputs.KAS }} checkout kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml
 
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
@@ -68,55 +34,75 @@ runs:
         remove-haskell: "true"
         remove-codeql: "true"
 
-    # Shared downloads cache (independent of build configuration)
-    - name: Cache Yocto downloads
-      uses: actions/cache@v4
+    - name: Restore sstate cache
+      if: ${{ inputs.force_rebuild != 'true' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: build/sstate-cache
+        key: yocto-sstate-${{ github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+        restore-keys: |
+          yocto-sstate-${{ github.ref_name }}-
+          yocto-sstate-master-
+
+    - name: Restore downloads cache
+      uses: actions/cache/restore@v4
       with:
         path: build/downloads
         key: yocto-downloads-${{ hashFiles('kas/*.yml', 'meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc') }}
         restore-keys: |
           yocto-downloads-
 
-    # Hierarchical sstate cache with stage-based fallback
-    - name: Cache Yocto sstate
-      uses: actions/cache@v4
+    - name: Build zenoh and zenoh-c (Rust backend)
+      shell: bash
+      run: |
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml -- zenoh zenoh-c
+
+    - name: Build zenoh-pico
+      shell: bash
+      run: |
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml -- zenoh-pico
+
+    - name: Build zenoh-cpp with zenoh-c backend
+      shell: bash
+      run: |
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-c-backend.yml -- zenoh-cpp
+
+    - name: Build zenoh-cpp with zenoh-pico backend
+      shell: bash
+      run: |
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-pico-backend.yml -- zenoh-cpp
+
+    - name: Clean sstate duplicates
+      shell: bash
+      run: |
+        SSTATE_SCRIPT="layers/oe-core/scripts/sstate-cache-management.py"
+        if [ -f "${SSTATE_SCRIPT}" ]; then
+          echo "Cleaning sstate duplicates..."
+          python3 "${SSTATE_SCRIPT}" --remove-duplicated --cache-dir=build/sstate-cache -y || true
+        fi
+
+    - name: Save sstate cache
+      uses: actions/cache/save@v4
       with:
         path: build/sstate-cache
-        key: yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-${{ hashFiles('meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc', 'meta-zenoh/**/*.patch') }}
-        restore-keys: |
-          yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-
-          yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-
-          yocto-sstate-base-${{ inputs.component }}-${{ inputs.shared_memory }}-
-          yocto-sstate-base-zenoh-${{ inputs.shared_memory }}-
-          yocto-sstate-
+        key: yocto-sstate-${{ github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
 
-    - name: Build with kas
-      shell: bash
-      env:
-        KAS_TARGET: ${{ steps.config.outputs.KAS_TARGET }}
-      run: |
-        echo "Building targets: ${KAS_TARGET}"
-        ${{ steps.kas.outputs.KAS }} build ${{ steps.config.outputs.KAS_FILES }}
+    - name: Save downloads cache
+      uses: actions/cache/save@v4
+      with:
+        path: build/downloads
+        key: yocto-downloads-${{ hashFiles('kas/*.yml', 'meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc') }}
 
     - name: List built RPMs and native components
       shell: bash
       run: |
         echo "=== Built RPM packages ==="
-        find build/tmp/deploy/rpm/core2_64 \
-          -name '*zenoh*.rpm' \
+        find build/tmp/deploy/rpm -name '*zenoh*.rpm' \
           -exec echo -e "\n=== {} ===" \; \
-          -exec rpm -qp --queryformat "[%-20{=NAME} %{FILENAMES}\n]" {} \;
+          -exec rpm -qp --queryformat "[%-20{=NAME} %{FILENAMES}\n]" {} \; 2>/dev/null || echo "No RPMs found"
 
         echo -e "\n=== Native sysroot components ==="
         find build/tmp/sysroots-components/x86_64 \
           -maxdepth 1 -type d -name 'zenoh*-native' \
           -exec echo -e "\n=== {} ===" \; \
-          -exec tree -L 2 -I sysroot-providers {} \;
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      if: success()
-      with:
-        name: zenoh-${{ inputs.component }}-${{ inputs.build_stage }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-rpms
-        path: build/tmp/deploy/rpm/**/*zenoh*.rpm
-        retention-days: 7
+          -exec tree -L 2 -I sysroot-providers {} \; 2>/dev/null || echo "No native components found"
