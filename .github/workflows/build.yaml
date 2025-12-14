@@ -13,93 +13,42 @@ on:
     paths-ignore:
       - "**.md"
       - .gitignore
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: "Force full rebuild (ignore cache)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "true"
+
   build:
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 720
-    strategy:
-  build-base:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 360
-    strategy:
-      fail-fast: false
-      matrix:
-        shared_memory: [shm, no-shm]
-        component: [zenoh, zenoh-pico]
-
+    timeout-minutes: 300
     steps:
-      - name: Skip duplicate actions
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: "same_content_newer"
-          skip_after_successful_duplicate: "true"
-          do_not_skip: '["workflow_dispatch", "schedule"]'
-          paths_ignore: '["**.md", ".gitignore"]'
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build base component
+      - name: Build all Zenoh components
         uses: ./.github/actions/kas-build
         with:
-          shared_memory: ${{ matrix.shared_memory }}
-          build_stage: "base"
-          component: ${{ matrix.component }}
-
-  build-zenoh-c:
-    needs: build-base
-    runs-on: ubuntu-24.04
-    timeout-minutes: 360
-    strategy:
-      fail-fast: false
-      matrix:
-        shared_memory: [shm, no-shm]
-
-    steps:
-      - name: Skip duplicate actions
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: "same_content_newer"
-          skip_after_successful_duplicate: "true"
-          do_not_skip: '["workflow_dispatch", "schedule"]'
-          paths_ignore: '["**.md", ".gitignore"]'
-
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Build zenoh-c
-        uses: ./.github/actions/kas-build
-        with:
-          shared_memory: ${{ matrix.shared_memory }}
-          build_stage: "c-api"
-          component: "zenoh-c"
-
-  build-zenoh-cpp:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        shared_memory: [shm, no-shm]
-        zenoh_cpp_backend: [zenoh-c, zenoh-pico, both]
-
-    steps:
-      - name: Skip duplicate actions
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: "same_content_newer"
-          skip_after_successful_duplicate: "true"
-          do_not_skip: '["workflow_dispatch", "schedule"]'
-          paths_ignore: '["**.md", ".gitignore"]'
-
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Build zenoh-cpp
-        uses: ./.github/actions/kas-build
-        with:
-          shared_memory: ${{ matrix.shared_memory }}
-          build_stage: "cpp"
-          zenoh_cpp_backend: ${{ matrix.zenoh_cpp_backend }}
-          component: "zenoh-cpp"
+          force_rebuild: ${{ inputs.force_rebuild || false }}

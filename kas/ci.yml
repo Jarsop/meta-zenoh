@@ -8,7 +8,7 @@ target: []
 local_conf_header:
   reduce_diskspace: |
     INHERIT += "rm_work"
-    RM_WORK_EXCLUDE += "zenoh zenoh-pico zenoh-c"
+    RM_WORK_EXCLUDE += "zenoh zenoh-pico zenoh-c zenoh-cpp"
 
   sstate_mirrors: |
     BB_HASHSERVE_UPSTREAM = "hashserv.yoctoproject.org:8686"
