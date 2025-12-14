@@ -6,15 +6,19 @@ inputs:
     description: "Shared memory option (shm or no-shm)"
     required: true
   build_stage:
-    description: "Build stage (base, c-api, cpp)"
+    description: "Build stage (toolchain, zenoh, zenoh-pico, zenoh-c, zenoh-cpp)"
     required: true
   component:
-    description: "Component to build (zenoh, zenoh-pico, zenoh-c, zenoh-cpp)"
+    description: "Component to build (zenoh-toolchain, zenoh, zenoh-pico, zenoh-c, zenoh-cpp)"
     required: true
   zenoh_cpp_backend:
     description: "Zenoh C++ backend option (for cpp stage only)"
     required: false
     default: "none"
+  force_rebuild:
+    description: "Force full rebuild (ignore cache)"
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -23,7 +27,7 @@ runs:
       id: kas
       shell: bash
       run: |
-        wget https://github.com/siemens/kas/raw/5.0/kas-container -O /tmp/kas
+        wget -q https://github.com/siemens/kas/raw/5.0/kas-container -O /tmp/kas
         chmod +x /tmp/kas
         echo "KAS=/tmp/kas" >> "${GITHUB_OUTPUT}"
 
@@ -31,6 +35,7 @@ runs:
       id: config
       shell: bash
       run: |
+        # Base configuration
         BASE_CONFIG="kas/ci.yml"
 
         # Shared memory configuration
@@ -38,8 +43,8 @@ runs:
           SHM=":kas/shared-memory.yml:kas/unstable-api.yml"
         fi
 
-        # Backend configuration only for cpp stage
-        if [ "${{ inputs.build_stage }}" = "cpp" ]; then
+        # Backend configuration only for zenoh-cpp stage
+        if [ "${{ inputs.build_stage }}" = "zenoh-cpp" ]; then
           if [[ "${{ inputs.zenoh_cpp_backend }}" =~ ^(zenoh-c|both)$ ]]; then
             BE=":kas/zenoh-c-backend.yml"
           fi
@@ -49,12 +54,17 @@ runs:
         fi
 
         echo "KAS_FILES=${BASE_CONFIG}${SHM}${BE}" >> "${GITHUB_OUTPUT}"
-        echo "KAS_TARGET=${{ inputs.component }} ${{ inputs.component }}-native" >> "${GITHUB_OUTPUT}"
+
+        # Set target based on build stage
+        if [ "${{ inputs.build_stage }}" = "toolchain" ]; then
+          echo "KAS_TARGET=zenoh-toolchain" >> "${GITHUB_OUTPUT}"
+        else
+          echo "KAS_TARGET=${{ inputs.component }} ${{ inputs.component }}-native" >> "${GITHUB_OUTPUT}"
+        fi
 
     - name: Checkout with kas
       shell: bash
       run: |
-        # Trigger necessary dependencies installation before maximizing build space
         ${{ steps.kas.outputs.KAS }} checkout ${{ steps.config.outputs.KAS_FILES }}
 
     - name: Maximize build space
@@ -68,7 +78,18 @@ runs:
         remove-haskell: "true"
         remove-codeql: "true"
 
-    # Shared downloads cache (independent of build configuration)
+    # Restore sstate from GHA cache (warm-up only, for persistence across runs)
+    - name: Restore sstate cache
+      if: ${{ inputs.build_stage == 'toolchain' && inputs.force_rebuild != 'true' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: build/sstate-cache
+        key: yocto-sstate-${{ github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+        restore-keys: |
+          yocto-sstate-${{ github.ref_name }}-
+          yocto-sstate-master-
+
+    # Restore downloads cache (shared across all jobs and runs)
     - name: Cache Yocto downloads
       uses: actions/cache@v4
       with:
@@ -77,18 +98,38 @@ runs:
         restore-keys: |
           yocto-downloads-
 
-    # Hierarchical sstate cache with stage-based fallback
-    - name: Cache Yocto sstate
-      uses: actions/cache@v4
+    # Download sstate artifact from current run (non-toolchain jobs)
+    - name: Download sstate artifact
+      if: ${{ inputs.build_stage != 'toolchain' }}
+      uses: actions/download-artifact@v4
       with:
-        path: build/sstate-cache
-        key: yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-${{ hashFiles('meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc', 'meta-zenoh/**/*.patch') }}
-        restore-keys: |
-          yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-
-          yocto-sstate-${{ inputs.build_stage }}-${{ inputs.component }}-${{ inputs.shared_memory }}-
-          yocto-sstate-base-${{ inputs.component }}-${{ inputs.shared_memory }}-
-          yocto-sstate-base-zenoh-${{ inputs.shared_memory }}-
-          yocto-sstate-
+        name: sstate-cache-${{ github.run_id }}
+        path: build/sstate-artifact
+      continue-on-error: true
+
+    - name: Extract sstate cache from artifact
+      if: ${{ inputs.build_stage != 'toolchain' }}
+      shell: bash
+      run: |
+        if [ -f build/sstate-artifact/sstate-cache.tar.zst ]; then
+          echo "Extracting sstate-cache from artifact..."
+          mkdir -p build/sstate-cache
+          tar --zstd -xf build/sstate-artifact/sstate-cache.tar.zst -C build/sstate-cache
+          rm -rf build/sstate-artifact
+          echo "Sstate cache restored: $(du -sh build/sstate-cache | cut -f1)"
+        else
+          echo "No sstate artifact found, starting fresh"
+          rm -rf build/sstate-artifact
+        fi
+
+    # Save list of existing sstate files before build (for delta calculation)
+    - name: Save sstate file list before build
+      shell: bash
+      run: |
+        mkdir -p build/sstate-cache
+        cd build/sstate-cache
+        find . -type f | sort > ../sstate-before.txt || true
+        echo "Files before build: $(wc -l < ../sstate-before.txt)"
 
     - name: Build with kas
       shell: bash
@@ -98,7 +139,112 @@ runs:
         echo "Building targets: ${KAS_TARGET}"
         ${{ steps.kas.outputs.KAS }} build ${{ steps.config.outputs.KAS_FILES }}
 
+    # Calculate delta and merge with latest artifact
+    - name: Download latest sstate artifact for merge
+      uses: actions/download-artifact@v4
+      with:
+        name: sstate-cache-${{ github.run_id }}
+        path: build/sstate-merge
+      continue-on-error: true
+
+    - name: Clean and merge sstate
+      shell: bash
+      run: |
+        # Clean sstate duplicates using Yocto's script
+        SSTATE_SCRIPT="layers/oe-core/scripts/sstate-cache-management.py"
+        if [ -f "${SSTATE_SCRIPT}" ]; then
+          echo "Cleaning sstate duplicates..."
+          python3 "${SSTATE_SCRIPT}" --remove-duplicated --cache-dir=build/sstate-cache -y || true
+        fi
+
+        # Find new files (delta) - use relative paths from build/sstate-cache
+        cd build/sstate-cache
+        find . -type f | sort > ../sstate-after.txt
+        comm -13 ../sstate-before.txt ../sstate-after.txt > ../sstate-delta.txt
+        echo "New sstate files: $(wc -l < ../sstate-delta.txt)"
+        cd ../..
+
+        # Prepare merge directory
+        mkdir -p build/sstate-final
+
+        # Extract latest artifact if exists (other jobs may have updated it)
+        if [ -f build/sstate-merge/sstate-cache.tar.zst ]; then
+          echo "Extracting latest artifact for merge..."
+          tar --zstd -xf build/sstate-merge/sstate-cache.tar.zst -C build/sstate-final
+          rm -rf build/sstate-merge
+        else
+          rm -rf build/sstate-merge
+        fi
+
+        # For toolchain, copy full sstate (establishes baseline)
+        if [ "${{ inputs.build_stage }}" = "toolchain" ]; then
+          echo "Toolchain build: copying full sstate..."
+          rsync -a build/sstate-cache/ build/sstate-final/
+        elif [ -s build/sstate-delta.txt ]; then
+          # Copy only delta files for other stages (using relative paths)
+          echo "Adding $(wc -l < build/sstate-delta.txt) delta files..."
+          rsync -a --files-from=build/sstate-delta.txt build/sstate-cache/ build/sstate-final/
+        fi
+
+        # Clean duplicates in merged result
+        if [ -f "${SSTATE_SCRIPT}" ]; then
+          echo "Cleaning merged sstate duplicates..."
+          python3 "${SSTATE_SCRIPT}" --remove-duplicated --cache-dir=build/sstate-final -y || true
+        fi
+
+        # Create compressed archive
+        echo "Creating sstate archive..."
+        tar --zstd -cf build/sstate-cache.tar.zst -C build/sstate-final .
+        echo "Sstate archive size: $(du -sh build/sstate-cache.tar.zst | cut -f1)"
+
+        # Cleanup temp files
+        rm -rf build/sstate-final build/sstate-before.txt build/sstate-after.txt build/sstate-delta.txt
+
+    # Delete old artifact before uploading new one
+    - name: Delete old sstate artifact
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        ARTIFACT_NAME="sstate-cache-${{ github.run_id }}"
+        echo "Checking for existing artifact: ${ARTIFACT_NAME}"
+
+        # Get artifact ID if exists
+        ARTIFACT_ID=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+          --jq ".artifacts[] | select(.name == \"${ARTIFACT_NAME}\") | .id" 2>/dev/null || true)
+
+        if [ -n "${ARTIFACT_ID}" ]; then
+          echo "Deleting artifact ID: ${ARTIFACT_ID}"
+          gh api --method DELETE "/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}" || true
+        else
+          echo "No existing artifact to delete"
+        fi
+
+    - name: Upload merged sstate artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sstate-cache-${{ github.run_id }}
+        path: build/sstate-cache.tar.zst
+        retention-days: 1
+        compression-level: 0
+        overwrite: true
+
+    # Save sstate to GHA cache (warm-up only, for persistence across runs)
+    - name: Save sstate cache
+      if: ${{ inputs.build_stage == 'toolchain' }}
+      uses: actions/cache/save@v4
+      with:
+        path: build/sstate-cache
+        key: yocto-sstate-${{ github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+
+    # Cleanup archive after upload
+    - name: Cleanup sstate archive
+      shell: bash
+      run: rm -f build/sstate-cache.tar.zst
+
+    # List and upload build artifacts (non-toolchain builds only)
     - name: List built RPMs and native components
+      if: ${{ inputs.build_stage != 'toolchain' }}
       shell: bash
       run: |
         echo "=== Built RPM packages ==="
@@ -114,9 +260,9 @@ runs:
           -exec tree -L 2 -I sysroot-providers {} \;
 
     - name: Upload build artifacts
+      if: ${{ inputs.build_stage != 'toolchain' && success() }}
       uses: actions/upload-artifact@v4
-      if: success()
       with:
-        name: zenoh-${{ inputs.component }}-${{ inputs.build_stage }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-rpms
+        name: zenoh-${{ inputs.component }}-${{ inputs.shared_memory }}-${{ inputs.zenoh_cpp_backend }}-rpms
         path: build/tmp/deploy/rpm/**/*zenoh*.rpm
         retention-days: 7

@@ -13,90 +13,144 @@ on:
     paths-ignore:
       - "**.md"
       - .gitignore
+  workflow_dispatch:
+    inputs:
+      components:
+        description: "Components to build"
+        type: choice
+        options:
+          - all
+          - zenoh
+          - zenoh-pico
+          - zenoh-c
+          - zenoh-cpp
+        default: all
+      shared_memory:
+        description: "Shared memory variants"
+        type: choice
+        options:
+          - all
+          - shm
+          - no-shm
+        default: all
+      force_rebuild:
+        description: "Force full rebuild (ignore cache)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: write
+  contents: read
+
+env:
+  SSTATE_ARTIFACT: sstate-cache-${{ github.run_id }}
+  CACHE_KEY: yocto-sstate-${{ github.ref_name }}
 
 jobs:
-  build-base:
+  warm-up:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
-    strategy:
-      fail-fast: false
-      matrix:
-        shared_memory: [shm, no-shm]
-        component: [zenoh, zenoh-pico]
-
+    timeout-minutes: 240
+    outputs:
+      sstate_artifact: ${{ env.SSTATE_ARTIFACT }}
+      cache_key: ${{ env.CACHE_KEY }}
     steps:
-      - name: Skip duplicate actions
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: "same_content_newer"
-          skip_after_successful_duplicate: "true"
-          do_not_skip: '["workflow_dispatch", "schedule"]'
-          paths_ignore: '["**.md", ".gitignore"]'
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build base component
+      - name: Build toolchain
         uses: ./.github/actions/kas-build
         with:
-          shared_memory: ${{ matrix.shared_memory }}
-          build_stage: "base"
-          component: ${{ matrix.component }}
+          build_stage: "toolchain"
+          shared_memory: "no-shm"
+          component: "zenoh-toolchain"
+          force_rebuild: ${{ inputs.force_rebuild || false }}
 
-  build-zenoh-c:
-    needs: build-base
+  build-zenoh:
+    needs: warm-up
+    if: ${{ !inputs.components || inputs.components == 'all' || inputs.components == 'zenoh' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 180
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
-        shared_memory: [shm, no-shm]
-
+        shared_memory: ${{ (inputs.shared_memory == 'shm' && fromJSON('["shm"]')) || (inputs.shared_memory == 'no-shm' && fromJSON('["no-shm"]')) || fromJSON('["shm", "no-shm"]') }}
     steps:
-      - name: Skip duplicate actions
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: "same_content_newer"
-          skip_after_successful_duplicate: "true"
-          do_not_skip: '["workflow_dispatch", "schedule"]'
-          paths_ignore: '["**.md", ".gitignore"]'
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
+      - name: Build zenoh
+        uses: ./.github/actions/kas-build
+        with:
+          build_stage: "zenoh"
+          shared_memory: ${{ matrix.shared_memory }}
+          component: "zenoh"
+
+  build-zenoh-pico:
+    needs: warm-up
+    if: ${{ !inputs.components || inputs.components == 'all' || inputs.components == 'zenoh-pico' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        shared_memory: ${{ (inputs.shared_memory == 'shm' && fromJSON('["shm"]')) || (inputs.shared_memory == 'no-shm' && fromJSON('["no-shm"]')) || fromJSON('["shm", "no-shm"]') }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build zenoh-pico
+        uses: ./.github/actions/kas-build
+        with:
+          build_stage: "zenoh-pico"
+          shared_memory: ${{ matrix.shared_memory }}
+          component: "zenoh-pico"
+
+  build-zenoh-c:
+    needs: warm-up
+    if: ${{ !inputs.components || inputs.components == 'all' || inputs.components == 'zenoh-c' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        shared_memory: ${{ (inputs.shared_memory == 'shm' && fromJSON('["shm"]')) || (inputs.shared_memory == 'no-shm' && fromJSON('["no-shm"]')) || fromJSON('["shm", "no-shm"]') }}
+    steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Build zenoh-c
         uses: ./.github/actions/kas-build
         with:
+          build_stage: "zenoh-c"
           shared_memory: ${{ matrix.shared_memory }}
-          build_stage: "c-api"
           component: "zenoh-c"
 
   build-zenoh-cpp:
-    needs: [build-base, build-zenoh-c]
+    needs: [build-zenoh-c, build-zenoh-pico]
+    if: ${{ !inputs.components || inputs.components == 'all' || inputs.components == 'zenoh-cpp' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 180
+    timeout-minutes: 120
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
-        shared_memory: [shm, no-shm]
+        shared_memory: ${{ (inputs.shared_memory == 'shm' && fromJSON('["shm"]')) || (inputs.shared_memory == 'no-shm' && fromJSON('["no-shm"]')) || fromJSON('["shm", "no-shm"]') }}
         zenoh_cpp_backend: [zenoh-c, zenoh-pico, both]
-
     steps:
-      - name: Skip duplicate actions
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: "same_content_newer"
-          skip_after_successful_duplicate: "true"
-          do_not_skip: '["workflow_dispatch", "schedule"]'
-          paths_ignore: '["**.md", ".gitignore"]'
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Build zenoh-cpp
         uses: ./.github/actions/kas-build
         with:
+          build_stage: "zenoh-cpp"
           shared_memory: ${{ matrix.shared_memory }}
-          build_stage: "cpp"
-          zenoh_cpp_backend: ${{ matrix.zenoh_cpp_backend }}
           component: "zenoh-cpp"
+          zenoh_cpp_backend: ${{ matrix.zenoh_cpp_backend }}
