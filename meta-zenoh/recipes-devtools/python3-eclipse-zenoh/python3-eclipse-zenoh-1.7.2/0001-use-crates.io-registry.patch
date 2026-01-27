@@ -1,0 +1,23 @@
+From 97ff1635385bfc8e0488f34085f43c2e7f9b4389 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Tue, 27 Jan 2026 16:26:43 +0100
+Subject: [PATCH 1/2] use crates.io registry
+
+Upstream-Status: Pending
+Signed-off-by: Jean-Pierre Geslin <jarsop@outlook.com>
+---
+ Cargo.toml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 0055f02..d34f62b 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -44,5 +44,5 @@ maintenance = { status = "actively-developed" }
+ [dependencies]
+ paste = "1.0.14"
+ pyo3 = { version = "0.25.1", features = ["abi3-py39", "extension-module"] }
+-zenoh = { version = "1.7.2", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.7.2", features = ["internal", "unstable"], default-features = false }
+-zenoh-ext = { version = "1.7.2", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "release/1.7.2", features = ["internal"], optional = true }
++zenoh = { version = "1.7.2", features = ["internal", "unstable"], default-features = false }
++zenoh-ext = { version = "1.7.2", features = ["internal"], optional = true }
