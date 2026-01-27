@@ -55,7 +55,7 @@ runs:
     - name: Build zenoh and zenoh-c (Rust backend)
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml -- zenoh zenoh-c
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml -- zenoh zenoh-c python3-eclipse-zenoh
 
     - name: Build zenoh-pico
       shell: bash
