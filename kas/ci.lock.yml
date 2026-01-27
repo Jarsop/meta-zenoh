@@ -13,4 +13,4 @@ overrides:
         meta-yocto:
             commit: 0993c45a1f78f302fd40c78a2a1f709daa7a0ae0
         meta-clang:
-            commit: 003cba92e982bdd565a6889f28799f8bba14957e
+            commit: 2b3ee2500c89fe402741978421fb41e0d25c57e3
