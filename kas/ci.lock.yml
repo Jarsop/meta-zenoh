@@ -2,5 +2,15 @@ header:
     version: 14
 overrides:
     repos:
+        poky:
+            commit: cf615e1d3bde7e5cb53b56b67954bc6e75bbb1d6
+        meta-openembedded:
+            commit: 8a598a2bc9199a4fbb9008a32ab143fb509a0933
+        bitbake:
+            commit: ac097300921590ed6a814f2c3fa08a59f4ded92d
+        oe-core:
+            commit: bba638620fd241cb43b5c7b64e07e84b4dff6024
+        meta-yocto:
+            commit: 0993c45a1f78f302fd40c78a2a1f709daa7a0ae0
         meta-clang:
-            commit: 3d891dbfce07c5ffaf7b6e59c9f3d657ed492bb4
+            commit: ba32aef278cd7d0249cfe3c9e8319970f3018ff2
