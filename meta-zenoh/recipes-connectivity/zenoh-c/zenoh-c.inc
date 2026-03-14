@@ -19,7 +19,8 @@ SRC_URI = "\
 S = "${WORKDIR}/git"
 B = "${S}"
 
-ZENOHC_CARGO_FLAGS = "-v;--frozen"
+ZENOHC_CARGO_FLAGS ?= ""
+ZENOHC_CARGO_FLAGS[doc] = "Additional flags to pass to cargo. notice ";" instead of space due to cmake peculiarities."
 
 PACKAGECONFIG ??= "\
     ${@["", "shared-memory"][bb.utils.to_boolean(d.getVar('ZENOH_SHARED_MEMORY', False))]} \
@@ -31,7 +32,7 @@ PACKAGECONFIG[shared-memory] = "-DZENOHC_BUILD_WITH_SHARED_MEMORY=ON, -DZENOHC_B
 PACKAGECONFIG[unstable-api] = "-DZENOHC_BUILD_WITH_UNSTABLE_API=ON, -DZENOHC_BUILD_WITH_UNSTABLE_API=OFF,,"
 
 EXTRA_OECMAKE = "\
-    -DZENOHC_CARGO_FLAGS='${ZENOHC_CARGO_FLAGS}' \
+    -DZENOHC_CARGO_FLAGS='-v;--frozen;${ZENOHC_CARGO_FLAGS}' \
     -DZENOHC_CUSTOM_TARGET=${RUST_HOST_SYS} \
     -DZENOHC_BUILD_IN_SOURCE_TREE=ON \
 "
