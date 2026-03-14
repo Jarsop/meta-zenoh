@@ -7,7 +7,7 @@ SRC_URI = "git://github.com/eclipse-zenoh/zenoh.git;protocol=https;nobranch=1"
 
 S = "${WORKDIR}/git"
 
-inherit cargo useradd systemd
+inherit cargo useradd systemd rust-msrv
 
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM:${PN} = "-r -s /bin/false zenohd"
