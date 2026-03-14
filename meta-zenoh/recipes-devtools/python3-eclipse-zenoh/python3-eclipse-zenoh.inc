@@ -4,7 +4,7 @@ HOMEPAGE = "https://zenoh.io"
 LICENSE = "EPL-2.0 | Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=530d837aca648e45704db71dedff39c4"
 
-inherit python_maturin
+inherit python_maturin rust-msrv
 
 SRC_URI = "\
     git://github.com/eclipse-zenoh/zenoh-python.git;protocol=https;nobranch=1 \

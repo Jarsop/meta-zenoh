@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=530d837aca648e45704db71dedff39c4"
 SRC_URI = "git://github.com/eclipse-zenoh/zenoh.git;protocol=https;nobranch=1"
 
 
-inherit cargo useradd systemd
+inherit cargo useradd systemd rust-msrv
 
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM:${PN} = "-r -s /bin/false zenohd"
