@@ -1,0 +1,18 @@
+header:
+  version: 18
+
+repos:
+  meta-rust:
+    url: https://github.com/meta-rust/meta-rust.git
+    path: layers/meta-rust
+    branch: master
+    patches:
+      walnascar-compat:
+        repo: zenoh
+        path: kas/patches/0001-meta-rust-walnascar-compat.patch
+
+local_conf_header:
+  rust-version-meta-rust: |
+    RUST_VERSION = "1.93.0"
+  rust-version-oe-core: |
+    RUSTVERSION = "1.93.0%"

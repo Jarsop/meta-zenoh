@@ -1,0 +1,121 @@
+diff --git a/classes/cargo_common.bbclass b/classes/cargo_common.bbclass
+index a3eca2a..56f5924 100644
+--- a/classes/cargo_common.bbclass
++++ b/classes/cargo_common.bbclass
+@@ -13,7 +13,7 @@ inherit crate-fetch
+ inherit rust-common
+ 
+ # Where we download our registry and dependencies to
+-export CARGO_HOME = "${WORKDIR}/cargo_home"
++export CARGO_HOME = "${UNPACKDIR}/cargo_home"
+ 
+ # The pkg-config-rs library used by cargo build scripts disables itself when
+ # cross compiling unless this is defined. We set up pkg-config appropriately
+diff --git a/conf/layer.conf b/conf/layer.conf
+index d25cbf4..6e6b192 100644
+--- a/conf/layer.conf
++++ b/conf/layer.conf
+@@ -10,7 +10,7 @@ BBFILE_PATTERN_rust-layer := "^${LAYERDIR}/"
+ BBFILE_PRIORITY_rust-layer = "7"
+ 
+ LAYERDEPENDS_rust-layer = "core openembedded-layer"
+-LAYERSERIES_COMPAT_rust-layer = "gatesgarth hardknott honister kirkstone langdale mickledore scarthgap"
++LAYERSERIES_COMPAT_rust-layer = "gatesgarth hardknott honister kirkstone langdale mickledore scarthgap walnascar"
+ 
+ # Override security flags
+ require conf/distro/include/rust_security_flags.inc
+diff --git a/recipes-devtools/cargo/cargo.inc b/recipes-devtools/cargo/cargo.inc
+index 607c51f..1346f52 100644
+--- a/recipes-devtools/cargo/cargo.inc
++++ b/recipes-devtools/cargo/cargo.inc
+@@ -19,16 +19,16 @@ EXCLUDE_FROM_WORLD = "1"
+ inherit cargo pkgconfig
+ 
+ do_cargo_setup_snapshot () {
+-	${WORKDIR}/rust-snapshot-components/${CARGO_SNAPSHOT}/install.sh --prefix="${WORKDIR}/${CARGO_SNAPSHOT}" --disable-ldconfig
++	${UNPACKDIR}/rust-snapshot-components/${CARGO_SNAPSHOT}/install.sh --prefix="${UNPACKDIR}/${CARGO_SNAPSHOT}" --disable-ldconfig
+ 	# Need to use uninative's loader if enabled/present since the library paths
+ 	# are used internally by rust and result in symbol mismatches if we don't
+ 	if [ ! -z "${UNINATIVE_LOADER}" -a -e "${UNINATIVE_LOADER}" ]; then
+-		patchelf-uninative ${WORKDIR}/${CARGO_SNAPSHOT}/bin/cargo --set-interpreter ${UNINATIVE_LOADER}
++		patchelf-uninative ${UNPACKDIR}/${CARGO_SNAPSHOT}/bin/cargo --set-interpreter ${UNINATIVE_LOADER}
+ 	fi
+ }
+ 
+ addtask cargo_setup_snapshot after do_unpack before do_configure
+-do_cargo_setup_snapshot[dirs] += "${WORKDIR}/${CARGO_SNAPSHOT}"
++do_cargo_setup_snapshot[dirs] += "${UNPACKDIR}/${CARGO_SNAPSHOT}"
+ do_cargo_setup_snapshot[vardepsexclude] += "UNINATIVE_LOADER"
+ 
+ 
+@@ -53,4 +53,4 @@ export LIBSSH2_SYS_USE_PKG_CONFIG = "1"
+ # When building cargo-native we don't have cargo-native to use and depend on,
+ # so we must use the locally set up snapshot to bootstrap the build.
+ BASEDEPENDS:remove:class-native = "cargo-native"
+-CARGO:class-native = "${WORKDIR}/${CARGO_SNAPSHOT}/bin/cargo"
++CARGO:class-native = "${UNPACKDIR}/${CARGO_SNAPSHOT}/bin/cargo"
+diff --git a/recipes-devtools/rust/rust-cross.inc b/recipes-devtools/rust/rust-cross.inc
+index a77f7d5..63cd0a1 100644
+--- a/recipes-devtools/rust/rust-cross.inc
++++ b/recipes-devtools/rust/rust-cross.inc
+@@ -30,7 +30,7 @@ INHIBIT_DEFAULT_RUST_DEPS = "1"
+ # so it might make sense to take it's mapping. For now, though, we just mention
+ # the bits we need explicitly.
+ DEPENDS += "rust-llvm-native"
+-DEPENDS += "virtual/${TARGET_PREFIX}gcc virtual/${TARGET_PREFIX}compilerlibs virtual/libc"
++DEPENDS += "gcc-cross-${TARGET_ARCH} virtual/${MLPREFIX}compilerlibs virtual/libc"
+ DEPENDS += "rust-native"
+ 
+ PROVIDES = "virtual/${TARGET_PREFIX}rust"
+diff --git a/recipes-devtools/rust/rust.inc b/recipes-devtools/rust/rust.inc
+index 6cd31af..e60ee4f 100644
+--- a/recipes-devtools/rust/rust.inc
++++ b/recipes-devtools/rust/rust.inc
+@@ -43,25 +43,25 @@ setup_cargo_environment () {
+ include rust-common.inc
+ 
+ do_rust_setup_snapshot () {
+-    for installer in "${WORKDIR}/rust-snapshot-components/"*"/install.sh"; do
+-        "${installer}" --prefix="${WORKDIR}/rust-snapshot" --disable-ldconfig
++    for installer in "${UNPACKDIR}/rust-snapshot-components/"*"/install.sh"; do
++        "${installer}" --prefix="${UNPACKDIR}/rust-snapshot" --disable-ldconfig
+     done
+ 
+     # Some versions of rust (e.g. 1.18.0) tries to find cargo in stage0/bin/cargo
+     # and fail without it there.
+     mkdir -p ${RUSTSRC}/build/${BUILD_SYS}
+-    ln -sf ${WORKDIR}/rust-snapshot/ ${RUSTSRC}/build/${BUILD_SYS}/stage0
++    ln -sf ${UNPACKDIR}/rust-snapshot/ ${RUSTSRC}/build/${BUILD_SYS}/stage0
+ 
+     # Need to use uninative's loader if enabled/present since the library paths
+     # are used internally by rust and result in symbol mismatches if we don't
+     if [ ! -z "${UNINATIVE_LOADER}" -a -e "${UNINATIVE_LOADER}" ]; then
+         for bin in cargo rustc rustdoc; do
+-            patchelf-uninative ${WORKDIR}/rust-snapshot/bin/$bin --set-interpreter ${UNINATIVE_LOADER}
++            patchelf-uninative ${UNPACKDIR}/rust-snapshot/bin/$bin --set-interpreter ${UNINATIVE_LOADER}
+         done
+     fi
+ }
+ addtask rust_setup_snapshot after do_unpack before do_configure
+-do_rust_setup_snapshot[dirs] += "${WORKDIR}/rust-snapshot"
++do_rust_setup_snapshot[dirs] += "${UNPACKDIR}/rust-snapshot"
+ do_rust_setup_snapshot[vardepsexclude] += "UNINATIVE_LOADER"
+ 
+ python do_configure() {
+@@ -112,14 +112,14 @@ python do_configure() {
+     config.set("build", "submodules", e(False))
+     config.set("build", "docs", e(False))
+ 
+-    rustc = d.expand("${WORKDIR}/rust-snapshot/bin/rustc")
++    rustc = d.expand("${UNPACKDIR}/rust-snapshot/bin/rustc")
+     config.set("build", "rustc", e(rustc))
+ 
+     # Support for the profiler runtime to generate e.g. coverage report,
+     # PGO etc.
+     config.set("build", "profiler", e(True))
+ 
+-    cargo = d.expand("${WORKDIR}/rust-snapshot/bin/cargo")
++    cargo = d.expand("${UNPACKDIR}/rust-snapshot/bin/cargo")
+     config.set("build", "cargo", e(cargo))
+ 
+     config.set("build", "vendor", e(True))
