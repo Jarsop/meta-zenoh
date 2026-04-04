@@ -55,22 +55,22 @@ runs:
     - name: Build zenoh and zenoh-c (Rust backend)
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml -- zenoh zenoh-c
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/python-zenoh.yml -- zenoh zenoh-c python3-eclipse-zenoh
 
     - name: Build zenoh-pico
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml -- zenoh-pico
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/python-zenoh.yml -- zenoh-pico
 
     - name: Build zenoh-cpp with zenoh-c backend
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-c-backend.yml -- zenoh-cpp
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-c-backend.yml:kas/python-zenoh.yml -- zenoh-cpp
 
     - name: Build zenoh-cpp with zenoh-pico backend
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-pico-backend.yml -- zenoh-cpp
+        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-pico-backend.yml:kas/python-zenoh.yml -- zenoh-cpp
 
     - name: Clean sstate duplicates
       shell: bash

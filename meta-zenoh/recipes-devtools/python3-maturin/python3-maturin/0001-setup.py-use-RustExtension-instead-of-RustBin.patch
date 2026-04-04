@@ -1,0 +1,32 @@
+Use RustExtension with Binding.Exec instead of RustBin.
+
+RustBin was added in setuptools-rust 1.4.0, which requires
+setuptools >= 62.4. Kirkstone ships setuptools 59.5.0.
+
+Also remove packages=["maturin"] to avoid directory conflict
+with the binary output.
+
+Upstream-Status: Inappropriate [kirkstone backport]
+
+diff --git a/setup.py b/setup.py
+--- a/setup.py
++++ b/setup.py
+@@ -18,7 +18,7 @@ try:
+     import tomli as tomllib
+ from setuptools import setup
+
+-from setuptools_rust import RustBin
++from setuptools_rust import Binding, RustExtension
+
+ # Force the wheel to be platform specific
+ # https://stackoverflow.com/a/45150383/3549270
+@@ -63,8 +63,7 @@ setup(
+     license="MIT OR Apache-2.0",
+     python_requires=">=3.7",
+     cmdclass={"bdist_wheel": bdist_wheel},
+-    packages=["maturin"],
+-    rust_extensions=[RustBin("maturin", args=cargo_args, cargo_manifest_args=["--locked"])],
++    rust_extensions=[RustExtension("maturin", args=cargo_args, binding=Binding.Exec)],
+     classifiers=[
+         "Topic :: Software Development :: Build Tools",
+         "Programming Language :: Rust",
