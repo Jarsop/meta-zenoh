@@ -1,7 +1,7 @@
 header:
   version: 18
   includes:
-    - kas/poky-zenoh.yml
+    - poky-zenoh.yml
 
 target: []
 
