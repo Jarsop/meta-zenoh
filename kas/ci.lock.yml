@@ -1,18 +1,18 @@
 header:
-    version: 14
+  version: 14
 overrides:
-    repos:
-        poky:
-            commit: cf615e1d3bde7e5cb53b56b67954bc6e75bbb1d6
-        meta-openembedded:
-            commit: 9d8ef26a9693e2c70ae34abe1a753873d42ec588
-        bitbake:
-            commit: ac097300921590ed6a814f2c3fa08a59f4ded92d
-        oe-core:
-            commit: bba638620fd241cb43b5c7b64e07e84b4dff6024
-        meta-yocto:
-            commit: 0993c45a1f78f302fd40c78a2a1f709daa7a0ae0
-        meta-clang:
-            commit: ba32aef278cd7d0249cfe3c9e8319970f3018ff2
-        meta-rust:
-            commit: 328334d9d31241d1d29eb754c5c102d5b0e002ab
+  repos:
+    poky:
+      commit: 93431249a6260da7bd29ee3ca32145d89e5b8259
+    meta-openembedded:
+      commit: 9d8ef26a9693e2c70ae34abe1a753873d42ec588
+    bitbake:
+      commit: ac097300921590ed6a814f2c3fa08a59f4ded92d
+    oe-core:
+      commit: bba638620fd241cb43b5c7b64e07e84b4dff6024
+    meta-yocto:
+      commit: 0993c45a1f78f302fd40c78a2a1f709daa7a0ae0
+    meta-clang:
+      commit: ba32aef278cd7d0249cfe3c9e8319970f3018ff2
+    meta-rust:
+      commit: 328334d9d31241d1d29eb754c5c102d5b0e002ab
