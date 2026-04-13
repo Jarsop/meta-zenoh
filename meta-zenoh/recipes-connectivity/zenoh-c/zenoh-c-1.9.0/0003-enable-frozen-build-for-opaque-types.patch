@@ -1,0 +1,37 @@
+From 0e46585614b56bf90d1d9dab23766f93ca3b40d7 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Geslin <jarsop@outlook.com>
+Date: Mon, 13 Apr 2026 17:00:29 +0200
+Subject: [PATCH 3/3] enable frozen build for opaque-types
+
+Upstream-Status: Pending
+Signed-off-by: Jean-Pierre Geslin <jarsop@outlook.com>
+---
+ build.rs                          | 1 -
+ buildrs/opaque_types_generator.rs | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/build.rs b/build.rs
+index 129ec366..cbfd8d00 100644
+--- a/build.rs
++++ b/build.rs
+@@ -82,7 +82,6 @@ fn sync_opaque_types_lockfile() {
+ }
+ 
+ fn main() {
+-    sync_opaque_types_lockfile();
+     buildrs::opaque_types_generator::generate_opaque_types();
+     buildrs::cbindgen_generator::generate_c_headers();
+     if let Some(out_path) = env::var_os("ZENOHC_DUMP_SRC_DIR") {
+diff --git a/buildrs/opaque_types_generator.rs b/buildrs/opaque_types_generator.rs
+index af482179..3cade93b 100644
+--- a/buildrs/opaque_types_generator.rs
++++ b/buildrs/opaque_types_generator.rs
+@@ -137,7 +137,7 @@ fn produce_opaque_types_data() -> (String, PathBuf) {
+         .args(linker_args)
+         .arg("--color")
+         .arg("never")
+-        .arg("--offline") // The opaque types are supposed to use same crates as the main build
++        .arg("--frozen") // The opaque types are supposed to use same crates as the main build
+         .arg("--target")
+         .arg(target)
+         .arg("--manifest-path")
