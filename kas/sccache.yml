@@ -1,0 +1,10 @@
+header:
+  version: 18
+
+local_conf_header:
+  sccache: |
+    INHERIT += "sccache-rust"
+    HOSTTOOLS_NONFATAL += "sccache"
+    # Mirror of CCACHE_* exclusion in bitbake.conf: a relocated cache dir
+    # must not change configuration/task hashes.
+    BB_HASHCONFIG_IGNORE_VARS += "SCCACHE_TOP_DIR SCCACHE_DIR SCCACHE_CACHE_SIZE SCCACHE_IDLE_TIMEOUT"
