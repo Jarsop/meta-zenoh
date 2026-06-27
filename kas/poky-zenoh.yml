@@ -26,7 +26,7 @@ repos:
       meta:
 
   meta-yocto:
-    url: https://git.yoctoproject.org/git/meta-yocto
+    url: https://git.yoctoproject.org/meta-yocto
     path: layers/meta-yocto
     branch: master
     layers:
