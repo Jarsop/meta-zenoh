@@ -1,7 +1,7 @@
 SUMMARY = "The Zenoh C API"
 DESCRIPTION = "C binding based on the main Zenoh implementation written in Rust"
 HOMEPAGE = "http://zenoh.io"
-LICENSE = "EPL-2.0 | Apache-2.0"
+LICENSE = "Apache-2.0 OR EPL-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=530d837aca648e45704db71dedff39c4"
 
 inherit cmake cargo pkgconfig rust-msrv

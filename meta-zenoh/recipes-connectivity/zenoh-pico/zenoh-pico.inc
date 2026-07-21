@@ -2,7 +2,7 @@ SUMMARY = "Eclipse zenoh for pico devices"
 DESCRIPTION = "zenoh-pico is the Eclipse zenoh implementation that targets constrained devices, offering a native C API. \
 It is fully compatible with its main Rust Zenoh implementation, providing a lightweight implementation of most functionalities."
 HOMEPAGE = "http://zenoh.io"
-LICENSE = "EPL-2.0 | Apache-2.0"
+LICENSE = "Apache-2.0 OR EPL-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=d296d6e2747ca8f5caae4b30fdad6b21"
 
 inherit cmake
