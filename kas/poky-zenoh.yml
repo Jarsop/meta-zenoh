@@ -14,21 +14,21 @@ repos:
   bitbake:
     url: https://git.openembedded.org/bitbake
     path: layers/bitbake
-    branch: master
+    branch: "2.18"
     layers:
       .: disabled
 
   oe-core:
     url: https://git.openembedded.org/openembedded-core
     path: layers/oe-core
-    branch: master
+    branch: wrynose
     layers:
       meta:
 
   meta-yocto:
     url: https://git.yoctoproject.org/meta-yocto
     path: layers/meta-yocto
-    branch: master
+    branch: wrynose
     layers:
       meta-poky:
       meta-yocto-bsp:
@@ -36,7 +36,7 @@ repos:
   meta-openembedded:
     url: http://git.openembedded.org/meta-openembedded
     path: layers/meta-openembedded
-    branch: master
+    branch: wrynose
     layers:
       meta-oe:
       meta-python:

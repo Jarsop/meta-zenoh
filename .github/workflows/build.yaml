@@ -3,13 +3,13 @@ name: Zenoh Yocto Build
 on:
   push:
     branches:
-      - master
+      - wrynose
     paths-ignore:
       - "**.md"
       - .gitignore
   pull_request:
     branches:
-      - master
+      - wrynose
     paths-ignore:
       - "**.md"
       - .gitignore
