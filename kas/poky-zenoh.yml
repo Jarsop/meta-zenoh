@@ -76,3 +76,8 @@ local_conf_header:
     CORE_IMAGE_EXTRA_INSTALL = "zenoh"
   reduce_distro_feature: |
     DISTRO_FEATURES:remove = "x11 opengl wayland vulkan pulseaudio"
+  crates_io_user_agent: |
+    # crates.io answers 403 to wget's default User-Agent. bitbake only sets
+    # one on the checkstatus path, never on download, so any crate that is
+    # not already in DL_DIR fails do_fetch with exit code 8.
+    FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 100 --user-agent='bitbake/${BB_VERSION}'"
