@@ -72,6 +72,17 @@ runs:
       run: |
         ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-pico-backend.yml:kas/python-zenoh.yml -- zenoh-cpp
 
+    - name: Upload fetch failure logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: do_fetch-logs
+        if-no-files-found: ignore
+        retention-days: 7
+        path: |
+          build/tmp/work/*/*/*/temp/log.do_fetch.*
+          build/tmp/work/*/*/temp/log.do_fetch.*
+
     - name: Clean sstate duplicates
       shell: bash
       run: |
