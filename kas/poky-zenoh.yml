@@ -16,6 +16,10 @@ repos:
     path: layers/bitbake
     # same as poky walnascar
     branch: "2.12"
+    patches:
+      crate-cdn:
+        repo: zenoh
+        path: kas/patches/0001-bitbake-crate-use-cdn.patch
     layers:
       .: disabled
 
