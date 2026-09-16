@@ -3,10 +3,10 @@ header:
 overrides:
   repos:
     bitbake:
-      commit: c251833d2062ef92fc7e77ab6456af928ad1d31a
+      commit: a9173b9d57f09d86ae24b605958b6acf4815f4ad
     oe-core:
-      commit: a4eb7bc2a750f76d9772eb88b7afb2b801bd1250
+      commit: 6f7a806ece411ab32e4b1c08a0299400bdf3b588
     meta-yocto:
-      commit: 8a8f9ad79e3d50312566620998dadff0aa29c7a7
+      commit: 30756f716a1f527a74a9e12bad8f6e0e756ed9a4
     meta-openembedded:
-      commit: 4708606398c25773d00552942b9a82d099116a26
+      commit: 6f59e8f70758323fbdcc3468c94a6508b9ac5af7

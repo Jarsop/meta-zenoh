@@ -10,7 +10,9 @@ Provided recipes:
 - [zenoh-pico](meta-zenoh/recipes-connectivity/zenoh-pico/zenoh-pico_git.bb): [Zenoh Pico implementation](https://github.com/eclipse-zenoh/zenoh-pico.git)
 - [zenoh-cpp](meta-zenoh/recipes-connectivity/zenoh-cpp/zenoh-cpp_git.bb): [Zenoh C++ API](https://github.com/eclipse-zenoh/zenoh-cpp.git)
 
-Currently, `master` branch of the layer is tested with `master` branch (`whinlatter`) of the Yocto Project.
+Currently, `master` branch of the layer is tested with `master` branch (`blacksail`) of the Yocto Project.
+
+`wrynose` and `walnascar` branches are available to build on the matching Yocto releases.
 
 `scarthgap` branch is available to ensure long term compatibility.
 
