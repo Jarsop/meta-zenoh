@@ -9,9 +9,9 @@ overrides:
     meta-yocto:
       commit: b3b659263566c4d2f2813190e72d93f8598a4c47
     meta-openembedded:
-      commit: 1ad0d777d1de1769e5995eb806f7ae5c15d0be54
+      commit: bec755063a8b5da65df626f5749496aadaa4f4bb
     poky:
-      commit: 8643f911602949518c5c5474726b49f943e36b83
+      commit: 1ba3cd7c884dc6c3d78c6bedc15e081f5000c8c9
     meta-clang:
       commit: 5945abf78de6c4b0269c4496fb63227344f79df7
     meta-rust:
