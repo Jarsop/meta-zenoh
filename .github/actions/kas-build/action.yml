@@ -44,9 +44,9 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: build/sstate-cache
-        key: yocto-sstate-${{ github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+        key: yocto-sstate-${{ github.base_ref || github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
         restore-keys: |
-          yocto-sstate-${{ github.ref_name }}-
+          yocto-sstate-${{ github.base_ref || github.ref_name }}-
           yocto-sstate-master-
 
     - name: Restore downloads cache
@@ -90,7 +90,7 @@ runs:
       uses: actions/cache/save@v4
       with:
         path: build/sstate-cache
-        key: yocto-sstate-${{ github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+        key: yocto-sstate-${{ github.base_ref || github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
 
     - name: Save downloads cache
       uses: actions/cache/save@v4
