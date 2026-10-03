@@ -6,6 +6,10 @@ inputs:
     description: "Force full rebuild (ignore cache)"
     required: false
     default: "false"
+  kas_config:
+    description: "Colon-separated kas config files applied to every checkout and build"
+    required: false
+    default: "kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml"
 
 runs:
   using: composite
@@ -21,7 +25,7 @@ runs:
     - name: Checkout with kas
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} checkout kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml
+        ${{ steps.kas.outputs.KAS }} checkout ${{ inputs.kas_config }}
 
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
@@ -56,22 +60,22 @@ runs:
     - name: Build zenoh and zenoh-c (Rust backend)
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/python-zenoh.yml -- zenoh zenoh-c python3-eclipse-zenoh
+        ${{ steps.kas.outputs.KAS }} build ${{ inputs.kas_config }} -- zenoh zenoh-c python3-eclipse-zenoh
 
     - name: Build zenoh-pico
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/python-zenoh.yml -- zenoh-pico
+        ${{ steps.kas.outputs.KAS }} build ${{ inputs.kas_config }} -- zenoh-pico
 
     - name: Build zenoh-cpp with zenoh-c backend
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-c-backend.yml:kas/python-zenoh.yml -- zenoh-cpp
+        ${{ steps.kas.outputs.KAS }} build ${{ inputs.kas_config }}:kas/zenoh-c-backend.yml -- zenoh-cpp
 
     - name: Build zenoh-cpp with zenoh-pico backend
       shell: bash
       run: |
-        ${{ steps.kas.outputs.KAS }} build kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/zenoh-pico-backend.yml:kas/python-zenoh.yml -- zenoh-cpp
+        ${{ steps.kas.outputs.KAS }} build ${{ inputs.kas_config }}:kas/zenoh-pico-backend.yml -- zenoh-cpp
 
     - name: Clean sstate duplicates
       shell: bash
