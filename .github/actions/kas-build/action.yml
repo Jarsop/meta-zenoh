@@ -80,7 +80,7 @@ runs:
     - name: Clean sstate duplicates
       shell: bash
       run: |
-        SSTATE_SCRIPT="layers/oe-core/scripts/sstate-cache-management.py"
+        SSTATE_SCRIPT=$(find layers -maxdepth 3 -path '*/scripts/sstate-cache-management.py' -print -quit)
         if [ -f "${SSTATE_SCRIPT}" ]; then
           echo "Cleaning sstate duplicates..."
           python3 "${SSTATE_SCRIPT}" --remove-duplicated --cache-dir=build/sstate-cache -y || true
