@@ -15,6 +15,10 @@ repos:
     url: https://git.yoctoproject.org/git/poky
     path: layers/poky
     branch: kirkstone
+    patches:
+      crate-cdn:
+        repo: zenoh
+        path: kas/patches/0001-bitbake-crate-use-cdn.patch
     layers:
       meta:
       meta-poky:
