@@ -52,3 +52,4 @@ jobs:
         uses: ./.github/actions/kas-build
         with:
           force_rebuild: ${{ inputs.force_rebuild || false }}
+          kas_config: kas/ci.yml:kas/shared-memory.yml:kas/unstable-api.yml:kas/python-zenoh.yml
