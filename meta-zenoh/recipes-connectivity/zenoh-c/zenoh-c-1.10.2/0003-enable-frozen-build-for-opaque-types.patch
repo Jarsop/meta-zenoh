@@ -1,6 +1,6 @@
-From 8c450e62c2f5cd83cf1bd7da1d59043cba869db8 Mon Sep 17 00:00:00 2001
+From 04e3cffbc4a95bcb56ea0ec347e32897ff4d2e23 Mon Sep 17 00:00:00 2001
 From: Jean-Pierre Geslin <jarsop@outlook.com>
-Date: Wed, 28 Oct 2026 21:51:40 +0100
+Date: Wed, 28 Oct 2026 13:43:51 +0000
 Subject: [PATCH 3/3] enable frozen build for opaque-types
 
 Upstream-Status: Pending
