@@ -1,6 +1,6 @@
-From 106a62483831579939f3766b80e8c6d1ea6cfe8b Mon Sep 17 00:00:00 2001
+From cf4d81974323560881c1ee95c443c08b92b3d811 Mon Sep 17 00:00:00 2001
 From: Jean-Pierre Geslin <jarsop@outlook.com>
-Date: Wed, 28 Oct 2026 21:52:48 +0100
+Date: Wed, 28 Oct 2026 12:01:37 +0000
 Subject: [PATCH 2/2] update lockfiles
 
 Upstream-Status: Pending
