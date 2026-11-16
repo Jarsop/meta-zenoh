@@ -32,7 +32,7 @@ do_install:append() {
     install -d -m 755 ${D}${systemd_system_unitdir}
     install -m 644 ${S}/zenohd/.service/zenohd.service ${D}${systemd_system_unitdir}/zenohd.service
 
-    install -d 755 ${D}${sysconfdir}/zenohd
+    install -d -m 755 ${D}${sysconfdir}/zenohd
     install -m 644 ${S}/DEFAULT_CONFIG.json5 ${D}${sysconfdir}/zenohd/zenohd.json5
 
     install -d -m 755 ${D}${localstatedir}/zenohd
