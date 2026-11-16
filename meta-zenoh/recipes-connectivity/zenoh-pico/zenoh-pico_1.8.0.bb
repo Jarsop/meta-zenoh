@@ -69,14 +69,6 @@ PACKAGECONFIG[periodic-tasks] = "-DZ_FEATURE_PERIODIC_TASKS=1, -DZ_FEATURE_PERIO
 PACKAGECONFIG[local-queryable] = "-DZ_FEATURE_LOCAL_QUERYABLE=1, -DZ_FEATURE_LOCAL_QUERYABLE=0,,"
 PACKAGECONFIG[admin-space] = "-DZ_FEATURE_ADMIN_SPACE=1, -DZ_FEATURE_ADMIN_SPACE=0,,"
 
-FRAG_MAX_SIZE ?= "300000"
-FRAG_MAX_SIZE[doc] = "Use this to override the maximum size for fragmented messages"
-BATCH_UNICAST_SIZE ?= "65535"
-BATCH_UNICAST_SIZE[doc] = "Use this to override the maximum unicast batch size"
-BATCH_MULTICAST_SIZE ?= "8192"
-BATCH_MULTICAST_SIZE[doc] = "Use this to override the maximum multicast batch size"
-CONFIG_SOCKET_TIMEOUT ?= "100"
-CONFIG_SOCKET_TIMEOUT[doc] = "Default socket timeout in milliseconds"
 TRANSPORT_LEASE ?= "10000"
 TRANSPORT_LEASE[doc] = "Link lease duration in milliseconds to announce to other zenoh nodes"
 TRANSPORT_LEASE_EXPIRE_FACTOR ?= "3"
@@ -85,10 +77,6 @@ PERIODIC_SCHEDULER_MAX_TASKS ?= "64"
 PERIODIC_SCHEDULER_MAX_TASKS[doc] = "Maximum number of tasks in the periodic scheduler"
 
 EXTRA_OECMAKE += "\
-    -DFRAG_MAX_SIZE=${FRAG_MAX_SIZE} \
-    -DBATCH_UNICAST_SIZE=${BATCH_UNICAST_SIZE} \
-    -DBATCH_MULTICAST_SIZE=${BATCH_MULTICAST_SIZE} \
-    -DZ_CONFIG_SOCKET_TIMEOUT=${CONFIG_SOCKET_TIMEOUT} \
     -DZ_TRANSPORT_LEASE=${TRANSPORT_LEASE} \
     -DZ_TRANSPORT_LEASE_EXPIRE_FACTOR=${TRANSPORT_LEASE_EXPIRE_FACTOR} \
     -DZP_PERIODIC_SCHEDULER_MAX_TASKS=${PERIODIC_SCHEDULER_MAX_TASKS} \
