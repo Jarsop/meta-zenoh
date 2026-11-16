@@ -39,23 +39,57 @@ runs:
         remove-haskell: "true"
         remove-codeql: "true"
 
+    # Cache keys. A saved key is never overwritten, so every run saves under its own key
+    # and restores the newest one of its branch. The branch is the one the run belongs
+    # to, or the base branch of a pull request.
+    - name: Cache keys
+      id: keys
+      shell: bash
+      env:
+        BRANCH: ${{ github.base_ref || github.ref_name }}
+        LOCK: ${{ hashFiles('kas/ci.lock.yml') }}
+        RUN: ${{ github.run_id }}-${{ github.run_attempt }}
+      run: |
+        {
+          echo "sstate_branch=yocto-sstate-$BRANCH-"
+          echo "sstate_lock=yocto-sstate-$BRANCH-$LOCK-"
+          echo "sstate=yocto-sstate-$BRANCH-$LOCK-$RUN"
+          echo "downloads_branch=yocto-downloads-$BRANCH-"
+          echo "downloads=yocto-downloads-$BRANCH-$RUN"
+        } >> "${GITHUB_OUTPUT}"
+
     - name: Restore sstate cache
       if: ${{ inputs.force_rebuild != 'true' }}
       uses: actions/cache/restore@v4
       with:
         path: build/sstate-cache
-        key: yocto-sstate-${{ github.base_ref || github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+        key: ${{ steps.keys.outputs.sstate }}
         restore-keys: |
-          yocto-sstate-${{ github.base_ref || github.ref_name }}-
-          yocto-sstate-master-
+          ${{ steps.keys.outputs.sstate_lock }}
+          ${{ steps.keys.outputs.sstate_branch }}
 
     - name: Restore downloads cache
       uses: actions/cache/restore@v4
       with:
         path: build/downloads
-        key: yocto-downloads-${{ hashFiles('kas/*.yml', 'meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc') }}
+        key: ${{ steps.keys.outputs.downloads }}
         restore-keys: |
+          ${{ steps.keys.outputs.downloads_branch }}
           yocto-downloads-
+
+    # From here on the cache directories hold at least what was restored: they are saved
+    # whatever happens to the build. A pull request saves nothing: its caches would be
+    # readable by that pull request only.
+    - name: Caches are ready to be saved
+      id: restored
+      shell: bash
+      env:
+        EVENT: ${{ github.event_name }}
+      run: |
+        mkdir -p build/sstate-cache build/downloads
+        if [ "$EVENT" != pull_request ]; then
+          echo "save=true" >> "${GITHUB_OUTPUT}"
+        fi
 
     - name: Build zenoh and zenoh-c (Rust backend)
       shell: bash
@@ -89,6 +123,7 @@ runs:
           build/tmp/work/*/*/temp/log.do_fetch.*
 
     - name: Clean sstate duplicates
+      if: ${{ always() && steps.restored.outputs.save == 'true' }}
       shell: bash
       run: |
         SSTATE_SCRIPT=$(find layers -maxdepth 3 -path '*/scripts/sstate-cache-management.py' -print -quit)
@@ -98,16 +133,45 @@ runs:
         fi
 
     - name: Save sstate cache
+      id: save_sstate
+      if: ${{ always() && steps.restored.outputs.save == 'true' }}
       uses: actions/cache/save@v4
       with:
         path: build/sstate-cache
-        key: yocto-sstate-${{ github.base_ref || github.ref_name }}-${{ hashFiles('kas/ci.lock.yml') }}
+        key: ${{ steps.keys.outputs.sstate }}
 
     - name: Save downloads cache
+      id: save_downloads
+      if: ${{ always() && steps.restored.outputs.save == 'true' }}
       uses: actions/cache/save@v4
       with:
         path: build/downloads
-        key: yocto-downloads-${{ hashFiles('kas/*.yml', 'meta-zenoh/**/*.bb', 'meta-zenoh/**/*.inc') }}
+        key: ${{ steps.keys.outputs.downloads }}
+
+    # One sstate and one downloads cache per branch: all caches of the repository share
+    # one size limit. Needs GH_TOKEN with `actions: write` in the job.
+    - name: Delete the caches this run replaced
+      if: ${{ always() && steps.restored.outputs.save == 'true' }}
+      shell: bash
+      env:
+        SSTATE_SAVED: ${{ steps.save_sstate.outcome == 'success' && steps.keys.outputs.sstate || '' }}
+        SSTATE_PREFIX: ${{ steps.keys.outputs.sstate_branch }}
+        DOWNLOADS_SAVED: ${{ steps.save_downloads.outcome == 'success' && steps.keys.outputs.downloads || '' }}
+        DOWNLOADS_PREFIX: ${{ steps.keys.outputs.downloads_branch }}
+      run: |
+        replaced() { # replaced <key prefix> <key just saved>: delete the other keys of this ref
+          [ -n "$2" ] || return 0
+          gh cache list --ref "$GITHUB_REF" --key "$1" --limit 100 --json id,key \
+              --jq '.[] | "\(.id)\t\(.key)"' |
+            while IFS=$'\t' read -r id key; do
+              if [ "$key" != "$2" ]; then
+                echo "Deleting $key"
+                gh cache delete "$id" || true
+              fi
+            done
+        }
+        replaced "$SSTATE_PREFIX" "$SSTATE_SAVED"
+        replaced "$DOWNLOADS_PREFIX" "$DOWNLOADS_SAVED"
 
     - name: List built RPMs and native components
       shell: bash

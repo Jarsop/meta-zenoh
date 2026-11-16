@@ -19,9 +19,15 @@ on:
         description: "Force full rebuild (ignore cache)"
         type: boolean
         default: false
+      ref:
+        description: "Commit to build instead of the branch head, e.g. a bump branch"
+        type: string
+        default: ""
 
+# A build of another commit runs on this branch, to share its cache, but in its own group:
+# it must not cancel a build of the branch head.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ inputs.ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -44,11 +50,45 @@ jobs:
     if: needs.pre_job.outputs.should_skip != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 300
+    permissions:
+      contents: read
+      actions: write  # delete the caches a build replaces
+      statuses: write  # report a build of `ref` on that commit
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      # The run belongs to the branch head; a build of `ref` shows on its own commit
+      # through a status.
+      - name: Report the build as started
+        if: inputs.ref != ''
+        run: |
+          gh api "repos/$GH_REPO/statuses/$(git rev-parse HEAD)" \
+            -f state=pending -f context="$GITHUB_WORKFLOW" \
+            -f description="Build started" \
+            -f target_url="$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID" --silent
 
       - name: Build all Zenoh components
         uses: ./.github/actions/kas-build
         with:
           force_rebuild: ${{ inputs.force_rebuild || false }}
+
+      - name: Report the build result
+        if: always() && inputs.ref != ''
+        env:
+          OUTCOME: ${{ job.status }}
+        run: |
+          case "$OUTCOME" in
+            success) state=success ;;
+            failure) state=failure ;;
+            *) state=error ;;
+          esac
+          gh api "repos/$GH_REPO/statuses/$(git rev-parse HEAD)" \
+            -f state="$state" -f context="$GITHUB_WORKFLOW" \
+            -f description="Build $OUTCOME" \
+            -f target_url="$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID" --silent
