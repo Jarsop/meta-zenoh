@@ -1,0 +1,223 @@
+name: Zenoh bump
+
+# Follows upstream Zenoh releases: one pull request per release branch, from
+# bump/zenoh-<version>-<branch>. Never writes a release branch: its commits are unsigned
+# and the maintainer lands them re-signed.
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Bump to this version instead of the detected candidate"
+        type: string
+        default: ""
+      dry_run:
+        description: "Generate and report only: no push, no pull request, no build"
+        type: boolean
+        default: false
+
+concurrency:
+  group: zenoh-bump
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TOOLS_REPOSITORY: Jarsop/meta-zenoh-tools
+  TOOLS_REF: 7eb85ec145a0e787356fccfb782b433cdf293e48  # v0.4.0
+  UV_VERSION: "0.7.7"  # the version the tool's uv.lock is written with
+
+jobs:
+  check:
+    # Forks have no access to the tool.
+    if: github.repository == 'Jarsop/meta-zenoh'
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.versions.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: master
+          path: layer
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: ${{ env.TOOLS_REPOSITORY }}
+          ref: ${{ env.TOOLS_REF }}
+          ssh-key: ${{ secrets.META_ZENOH_TOOLS_DEPLOY_KEY }}
+          persist-credentials: false
+          path: tools
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Version to bump to
+        id: versions
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          uv run --project tools --locked --no-dev meta-zenoh-tools \
+            check-versions --layer-path layer --report versions.json
+          version=${REQUESTED:-$(jq -r '.candidate // ""' versions.json)}
+          if [[ -n "$version" && ! "$version" =~ ^[0-9]+(\.[0-9]+)+$ ]]; then
+            echo "::error::'$version' is not a version"
+            exit 2
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          {
+            jq -r '"Layer: \(.current)", "Candidate: \(.candidate // "none")"' versions.json
+            jq -r '.incomplete | to_entries[] | "Release in progress: \(.key), not tagged in \(.value | join(", "))"' versions.json
+            echo "Bump to: ${version:-nothing}"
+          } | sed 's/$/  /' >> "$GITHUB_STEP_SUMMARY"
+
+  bump:
+    needs: check
+    if: needs.check.outputs.version != ''
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # The release branches. A new Yocto release adds one line.
+        branch: [master, wrynose, walnascar, scarthgap, kirkstone]
+    permissions:
+      contents: write  # push and delete bump/* branches
+      pull-requests: write
+      actions: write  # start the build of a bump branch
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+      BRANCH: ${{ matrix.branch }}
+      BUMP_BRANCH: bump/zenoh-${{ needs.check.outputs.version }}-${{ matrix.branch }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ matrix.branch }}
+          path: layer
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: ${{ env.TOOLS_REPOSITORY }}
+          ref: ${{ env.TOOLS_REF }}
+          ssh-key: ${{ secrets.META_ZENOH_TOOLS_DEPLOY_KEY }}
+          persist-credentials: false
+          path: tools
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      # Generated patches are authored and signed off with the git identity. The
+      # maintainer's keeps them identical to the ones the maintainer generates.
+      - name: Identity
+        run: |
+          git config --global user.name "Jean-Pierre Geslin"
+          git config --global user.email "jarsop@outlook.com"
+
+      # state: changed, unchanged (the branch already holds this bump), or untagged.
+      - name: Bump
+        id: bump
+        run: |
+          status=0
+          uv run --project tools --locked --no-dev meta-zenoh-tools \
+            bump-all "$VERSION" --layer-path layer --report report.json || status=$?
+          case "$status" in
+            0) ;;
+            3)
+              echo "::notice title=$BRANCH not bumped::$(jq -r '.error.message' report.json)"
+              echo "state=untagged" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+            *) exit "$status" ;;
+          esac
+          git -C layer add --all
+          if git -C layer diff --cached --quiet; then
+            state=unchanged
+          else
+            state=changed
+            git -C layer diff --cached > bump.diff
+          fi
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          echo "$BRANCH at $VERSION: $state" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the report and the diff
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: bump-${{ matrix.branch }}
+          path: |
+            report.json
+            bump.diff
+          if-no-files-found: ignore
+
+      # Nothing left to change: the bump has landed, or was never needed.
+      - name: Close the finished pull request
+        if: steps.bump.outputs.state == 'unchanged' && inputs.dry_run != true
+        run: |
+          pr=$(gh pr list --head "$BUMP_BRANCH" --base "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [[ -n "$pr" ]]; then
+            gh pr close "$pr" --comment "\`$BRANCH\` holds this bump at $(git -C layer rev-parse HEAD)."
+          fi
+          if git -C layer ls-remote --exit-code --heads origin "$BUMP_BRANCH" > /dev/null; then
+            git -C layer push origin --delete "$BUMP_BRANCH"
+          fi
+
+      # pushed: false when the bump branch already holds this tree on this base.
+      - name: Push the bump branch
+        id: push
+        if: steps.bump.outputs.state == 'changed' && inputs.dry_run != true
+        working-directory: layer
+        run: |
+          git -c commit.gpgsign=false commit --quiet --signoff -m "bump zenoh recipes to $VERSION"
+          pushed=true
+          remote="refs/remotes/origin/$BUMP_BRANCH"
+          if git fetch --quiet --depth=2 origin "+refs/heads/$BUMP_BRANCH:$remote" 2> /dev/null \
+            && [[ "$(git rev-parse "$remote^{tree}")" == "$(git rev-parse 'HEAD^{tree}')" ]] \
+            && [[ "$(git rev-parse "$remote^")" == "$(git rev-parse 'HEAD^')" ]]; then
+            pushed=false
+          else
+            git push --force origin "HEAD:refs/heads/$BUMP_BRANCH"
+          fi
+          echo "pushed=$pushed" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the pull request
+        if: steps.bump.outputs.state == 'changed' && inputs.dry_run != true
+        run: |
+          jq -r --arg branch "$BRANCH" '
+            "Generated by meta-zenoh-tools \(.tool) on `\($branch)`.",
+            "",
+            "| Component | Template | SRCREV | RUST_MSRV | Crates |",
+            "|---|---|---|---|---|",
+            (.components[]
+              | (if .rust_msrv
+                 then "\(.rust_msrv.value) (\(.rust_msrv.package))"
+                      + (if .rust_msrv.written then "" else ", not written" end)
+                 else "n/a" end) as $msrv
+              | "| \(.name) | \(.template_version) | `\(.srcrev)` | \($msrv) | \(.crates) |"),
+            "",
+            "### Upstream drift",
+            "",
+            ([.components[] | .name as $name | .drift[] | "- \($name): \(.)"]
+              | if length == 0 then "None." else .[] end),
+            "",
+            "### Files",
+            "",
+            (([.components[].files[]] + .files)[] | "- `\(.)`"),
+            "",
+            "Landing: re-sign the commit and fast-forward `\($branch)`. The next run closes this pull request."
+          ' report.json > body.md
+          pr=$(gh pr list --head "$BUMP_BRANCH" --base "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [[ -n "$pr" ]]; then
+            gh pr edit "$pr" --body-file body.md
+          else
+            gh pr create --base "$BRANCH" --head "$BUMP_BRANCH" \
+              --title "bump zenoh recipes to $VERSION ($BRANCH)" --body-file body.md
+          fi
+
+      # A pull request opened with the workflow token starts no workflow.
+      - name: Build the bump branch
+        if: steps.push.outputs.pushed == 'true'
+        run: gh workflow run build.yaml --ref "$BUMP_BRANCH"
